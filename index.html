@@ -97,7 +97,7 @@
     <div class="div-block-14">
       <div class="div-block-13">
         <p class="paragraph-11112">Events at 4Seas are the pulse of our connected lifestyle. The majority of gatherings—from knowledge shares to spontaneous social meetups—are initiated by our residents and friends in Chiang Mai, supported by the 4Seas to make every idea a reality.</p>
-        <a href="https://app.sola.day/event/4seas" target="_blank" class="link">GO check out 4Seas Event Gallery</a>
+        <a href="https://event.4seas.xyz/en" target="_blank" class="link">GO check out 4Seas Event Gallery</a>
       </div>
       <div class="div-block-21">
         <div class="div-block-22">
@@ -319,7 +319,7 @@
               <a href="https://maps.app.goo.gl/JQrhfWij9cgsAjZF6" target="_blank" class="link-block-5 w-inline-block">
                 <div class="text-block-8">Location</div>
               </a>
-              <a href="https://illustrious-pentagon-3a6.notion.site/4Seas-Nimman-Co-living-Guide-245b74ad80d580368da4f0bbe88fb116" target="_blank" class="link-block-5 bg-5 w-inline-block">
+              <a href="https://4seas.xyz/coliving" target="_blank" class="link-block-5 bg-5 w-inline-block">
                 <div class="text-block-9">Reserve</div>
               </a>
             </div>
@@ -482,8 +482,7 @@
 $(document).ready(function() {
   // 配置项
   const config = {
-    groupId: 3531, // Edge Patagonia 的 group_id
-    apiBaseUrl: 'https://api.sola.day',
+    eventsApiUrl: 'https://event.4seas.xyz/api/homepage-events',
     skeletonCount: 12,
     cardsPerPage: 9,
     cardsPerPageMobile: 8 // 新增：移动端每页显示数量
@@ -497,6 +496,8 @@ $(document).ready(function() {
   }
   // 显示骨架屏
   function showSkeleton() {
+    $('.error-message, .empty-state').hide();
+    $('.pagination').hide();
     $container.empty();
     for (let i = 0; i < config.skeletonCount; i++) {
       $container.append($skeletonTemplate.clone().show());
@@ -565,7 +566,8 @@ $(document).ready(function() {
       records = data;
     } else {
       console.error('❌ 无法解析数据结构:', data);
-      $('.error-message').text('数据格式错误').show();
+      $('.error-message p').text('数据格式错误，请刷新页面重试');
+      $('.error-message').show();
       $container.empty();
       return;
     }
@@ -578,22 +580,19 @@ $(document).ready(function() {
     const $template = $('.card').first().clone();
     records.forEach(event => {
       const $card = $template.clone().show();
-      const statusInfo = getEventStatus(event.start_time, event.end_time);
+      const statusInfo = getEventStatus(event.startsAt, event.endsAt);
       // 填充基本信息
       $card.find('.card-title').text(event.title || '未命名活动');
       // 日期和时间
-      const dateStr = formatDate(event.start_time);
-      const timeStr = formatTime(event.start_time);
+      const dateStr = formatDate(event.startsAt);
+      const timeStr = formatTime(event.startsAt);
       $card.find('.date').text(timeStr ? `${dateStr} ${timeStr}` : dateStr);
       // 地点
-      $card.find('.text-block-3').text(event.location || event.formatted_address || '地点待定');
+      $card.find('.text-block-3').text(event.venueName || event.address || '地点待定');
       // 状态
       $card.find('.text-block-5').text(statusInfo.status);
       // 活动链接
-      let eventUrl = event.external_url;
-      if (!eventUrl || eventUrl === '') {
-        eventUrl = `https://app.sola.day/event/detail/${event.id}`;
-      }
+      const eventUrl = event.detailUrl || `https://event.4seas.xyz/en/events/${encodeURIComponent(event.id)}`;
       $card.find('.fn-link-with-arrow').attr('href', eventUrl);
       // 状态样式
       if (statusInfo.isPast) {
@@ -605,8 +604,8 @@ $(document).ready(function() {
       }
       // 图片处理 - 修改:总是显示图片元素
       const $img = $card.find('.card-image');
-      if (event.cover_url) {
-        $img.attr('src', event.cover_url)
+      if (event.coverUrl) {
+        $img.attr('src', event.coverUrl)
             .attr('alt', event.title);
       } else {
         // 使用占位图片
@@ -625,7 +624,11 @@ $(document).ready(function() {
   function initPagination() {
     const $cards = $('.data-container .card');
     const totalCards = $cards.length;
-    if (totalCards === 0) return;
+    if (totalCards === 0) {
+      $('.pagination').hide();
+      return;
+    }
+    $('.pagination').show();
     const cardsPerPage = getCardsPerPage(); // 使用响应式函数
     const totalPages = Math.ceil(totalCards / cardsPerPage);
     let currentPage = 1;
@@ -690,9 +693,9 @@ $(document).ready(function() {
   // 数据请求
   let retryCount = 0;
   function fetchData(collection = 'upcoming') {
+    const normalizedCollection = collection === 'past' ? 'past' : 'upcoming';
+    const url = `${config.eventsApiUrl}?collection=${encodeURIComponent(normalizedCollection)}&limit=200`;
     showSkeleton();
-    // 构建URL
-    let url = `${config.apiBaseUrl}/event/list?collection=${collection}&group_id=${config.groupId}&limit=2000`;
     $.ajax({
       url: url,
       method: 'GET',
@@ -714,9 +717,8 @@ $(document).ready(function() {
           setTimeout(() => fetchData(collection), 2000);
         } else {
           $container.empty();
-          $('.error-message')
-            .text('加载失败,请刷新页面重试')
-            .show();
+          $('.error-message p').text('加载失败，请刷新页面重试');
+          $('.error-message').show();
         }
       }
     });
@@ -732,6 +734,10 @@ $(document).ready(function() {
     console.log(`🔍 筛选: ${collection}`);
     // 请求新数据
     fetchData(collection);
+  });
+  $('.error-message .button').on('click', function(e) {
+    e.preventDefault();
+    window.refreshEvents();
   });
   // 新增：监听窗口大小变化，重新初始化分页
   let resizeTimer;
