@@ -97,7 +97,7 @@
     <div class="div-block-14">
       <div class="div-block-13">
         <p class="paragraph-11112">Events at 4Seas are the pulse of our connected lifestyle. The majority of gatherings—from knowledge shares to spontaneous social meetups—are initiated by our residents and friends in Chiang Mai, supported by the 4Seas to make every idea a reality.</p>
-        <a href="https://event.4seas.xyz/en" target="_blank" class="link">GO check out 4Seas Event Gallery</a>
+        <a href="https://4seas.xyz/event" target="_blank" class="link">GO check out 4Seas Event Gallery</a>
       </div>
       <div class="div-block-21">
         <div class="div-block-22">
@@ -482,7 +482,7 @@
 $(document).ready(function() {
   // 配置项
   const config = {
-    eventsApiUrl: 'https://event.4seas.xyz/api/homepage-events',
+    eventsApiUrl: 'https://4seas.xyz/event/api/homepage-events',
     skeletonCount: 12,
     cardsPerPage: 9,
     cardsPerPageMobile: 8 // 新增：移动端每页显示数量
@@ -592,7 +592,7 @@ $(document).ready(function() {
       // 状态
       $card.find('.text-block-5').text(statusInfo.status);
       // 活动链接
-      const eventUrl = event.detailUrl || `https://event.4seas.xyz/en/events/${encodeURIComponent(event.id)}`;
+      const eventUrl = event.detailUrl || `https://4seas.xyz/event/events/${encodeURIComponent(event.id)}`;
       $card.find('.fn-link-with-arrow').attr('href', eventUrl);
       // 状态样式
       if (statusInfo.isPast) {
