@@ -33,3 +33,9 @@ test("homepage event gallery and coliving links stay on 4Seas properties", async
   assert.match(source, /href="https:\/\/4seas\.xyz\/coliving"/)
   assert.doesNotMatch(source, /href="https:\/\/app\.sola\.day\/event\/4seas"/)
 })
+
+test("homepage footer shows the September 2026 update marker at the bottom", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
+
+  assert.match(source, /<p class="fn-footer-update">2026 Sep Updated<\/p>\s*<\/div>\s*<script/)
+})
