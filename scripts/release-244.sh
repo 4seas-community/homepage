@@ -63,7 +63,7 @@ plan_release() {
   stage="$(mktemp -d "${release_state_dir}/stage.${release_name}.XXXXXX")"
   artifact="${release_state_dir}/${release_name}.tar.gz"
   plan="${release_state_dir}/${release_name}.plan"
-  trap 'rm -rf "${stage}"' RETURN
+  trap 'rm -rf "${stage}"' EXIT
 
   rsync -a 404.html favicon.ico index.html css images js "${stage}/"
   if command -v xattr >/dev/null 2>&1; then
@@ -91,8 +91,8 @@ plan_release() {
   ssh_244 "sudo -n /usr/sbin/nginx -t >/dev/null 2>&1" || fail "Nginx preflight failed"
   remote_status="$(ssh_244 "systemctl is-active nginx.service")"
   [[ "${remote_status}" == "active" ]] || fail "Nginx is not active"
-  remote_site="$(ssh_244 "sudo -n /usr/local/sbin/4seas-site list | awk '\$1 == \"site\" {print \$3, \$4}'")"
-  [[ "${remote_site}" == "enabled legacy" ]] || fail \
+  remote_site="$(ssh_244 "sudo -n /usr/local/sbin/4seas-site list | awk '\$1 == \"site\" {print}'")"
+  [[ " ${remote_site} " == *" enabled "* && " ${remote_site} " == *" legacy "* ]] || fail \
     "homepage inventory changed; expected: enabled legacy"
   curl -fsS --connect-timeout 5 --max-time 15 -o /dev/null "${public_url}" || fail \
     "public homepage baseline failed"

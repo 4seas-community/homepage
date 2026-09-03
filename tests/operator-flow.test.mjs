@@ -23,6 +23,7 @@ test("production release uses an atomic switch and has rollback", () => {
   assert.match(script, /rollback_remote/);
   assert.match(script, /Post-switch validation failed/);
   assert.match(script, /--approve/);
+  assert.match(script, /remote_site.*enabled.*legacy/s);
 });
 
 test("GitHub Actions runs tests but cannot deploy", () => {
