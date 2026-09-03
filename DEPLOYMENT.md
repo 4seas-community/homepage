@@ -2,6 +2,30 @@
 
 This runbook is written for Codex and for teammates who have the same scoped 4Seas homepage permissions. It incorporates the failure and rollback lessons from the September 2026 footer release.
 
+## Repository authority and release flow
+
+GitHub [`4seas-community/homepage`](https://github.com/4seas-community/homepage)
+is the only source of truth. All changes start on a GitHub branch, pass the
+repository tests in a pull request, and merge into GitHub `main`.
+
+Gitea `4Seas/homepage` is a downstream operational copy. It is synchronized
+manually from an operator's local checkout with `scripts/sync-gitea.sh`. Do not
+make independent commits in Gitea and never force-push either remote.
+
+Production release is a separate, manually approved operation:
+
+```text
+GitHub pull request → GitHub main → local sync to Gitea
+                                      ↓
+                              local release plan
+                                      ↓ human approval
+                       immutable 244 release and validation
+                                      ↓ on failure
+                              automatic rollback
+```
+
+Neither pushing GitHub nor synchronizing Gitea changes production.
+
 ## Scope and prerequisites
 
 - Site: `https://4seas.xyz/`
@@ -10,13 +34,18 @@ This runbook is written for Codex and for teammates who have the same scoped 4Se
 - Active pointer: `/opt/4seas-home/current`
 - Rollback: atomically point `current` to the previously recorded release.
 
-Every operator must use their own SSH account and private key. Their local remote-ops helper must pin:
+Every operator must use their own SSH account and private key. Configure the
+three `FOURSEAS_*` variables documented in [README.md](README.md). The repository
+SSH helper pins:
 
 - the operator's expected public-key fingerprint;
 - the server's verified ED25519 host-key fingerprint;
 - strict host-key checking.
 
-Do not copy another operator's private key, reuse their hard-coded identity helper, or weaken fingerprint checks. The installed `4seas-remote-ops` skill and its live host profile are authoritative; read them before operating production.
+Do not copy another operator's private key, reuse their identity, or weaken
+fingerprint checks. `scripts/ssh-244.sh` is the portable connection entry point.
+If the installed `4seas-remote-ops` skill is available, its live host profile
+and production confirmation gate also apply.
 
 ## Non-negotiable invariants
 
@@ -31,7 +60,17 @@ Do not copy another operator's private key, reuse their hard-coded identity help
 
 ## 1. Inspect and validate locally
 
-From the repository root:
+Start from an up-to-date GitHub `main`, then verify the Gitea copy before doing
+production work:
+
+```bash
+git switch main
+git pull --ff-only origin main
+./scripts/sync-gitea.sh --check
+./scripts/sync-gitea.sh --apply
+```
+
+From the repository root, inspect and test the exact source:
 
 ```bash
 git status --short
@@ -122,7 +161,10 @@ Verify that the archive has no absolute path, `..` component, or root `./` metad
 
 ## 4. Run read-only production preflight
 
-Use `scripts/preflight.sh` from the installed `4seas-remote-ops` skill. Then collect homepage-specific baseline evidence with the pinned SSH helper:
+Run `scripts/release-244.sh plan`. It performs the local test, artifact, hash,
+remote baseline, and payload-difference checks described in this runbook. For
+additional investigation, use `scripts/ssh-244.sh` as the pinned SSH helper and
+collect:
 
 - `sudo -n 4seas-site list`;
 - `readlink -f /opt/4seas-home/current`;
@@ -164,6 +206,10 @@ The card must state:
 - confirmation that no old release, other site, database, or Git remote will be changed.
 
 Obtain explicit confirmation. If the target, artifact checksum, permission strategy, commands, or rollback plan materially changes, show a new card and reconfirm.
+
+`scripts/release-244.sh plan` prints this card and an apply command containing
+the exact release name. Do not run that apply command until a human has approved
+the displayed card.
 
 ## 7. Upload and stage safely
 
