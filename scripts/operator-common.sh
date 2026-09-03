@@ -65,6 +65,7 @@ ssh_244() {
     -o IdentitiesOnly=yes \
     -o IdentityFile="${operator_key}" \
     -o StrictHostKeyChecking=yes \
+    -o HostKeyAlgorithms=ssh-ed25519 \
     -o ConnectTimeout=10 \
     -o ServerAliveInterval=15 \
     -o ServerAliveCountMax=2 \
@@ -75,6 +76,7 @@ gitea_git() {
   local ssh_command
   ssh_command="/usr/bin/ssh -p ${FOURSEAS_GITEA_PORT} -o BatchMode=yes"
   ssh_command+=" -o IdentitiesOnly=yes -o IdentityFile=${operator_key}"
-  ssh_command+=" -o StrictHostKeyChecking=yes -o ConnectTimeout=10"
+  ssh_command+=" -o StrictHostKeyChecking=yes -o HostKeyAlgorithms=ssh-ed25519"
+  ssh_command+=" -o ConnectTimeout=10"
   git -c "core.sshCommand=${ssh_command}" "$@"
 }
