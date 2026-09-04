@@ -48,6 +48,7 @@ test("homepage uses the standalone Longevity Month poster", async () => {
   assert.doesNotMatch(banner, /<a\b/)
   assert.equal(poster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a")
   assert.match(styles, /\.section-2 \.longevity-banner-image \{[\s\S]*?position: static;/)
+  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260904-longevity"/)
 })
 
 test("homepage removes the two old event ads but keeps the organizer action", async () => {
