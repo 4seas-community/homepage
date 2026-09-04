@@ -2552,6 +2552,29 @@
   display: none;
 }
 
+.section-2 .banner_slider,
+.section-2 .banner_slider_wrapper,
+.section-2 .banner_slider_item,
+.section-2 .longevity-banner-frame {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  transform: none;
+}
+
+.section-2 .banner_slider_wrapper {
+  display: block;
+}
+
+.section-2 .longevity-banner-image {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  position: static;
+}
+
 .div-block-34 {
   justify-content: center;
   align-items: center;
@@ -4188,4 +4211,3 @@
     grid-area: span 1 / span 4 / span 1 / span 4;
   }
 }
-
