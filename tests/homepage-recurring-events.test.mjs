@@ -34,7 +34,7 @@ test("homepage event gallery and coliving links stay on 4Seas properties", async
   assert.doesNotMatch(source, /href="https:\/\/app\.sola\.day\/event\/4seas"/)
 })
 
-test("homepage uses the standalone Longevity Month poster", async () => {
+test("homepage keeps Longevity first and adds ETHChiangmai second", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
   const styles = await readFile(new URL("../css/4seas-631dbf.webflow.css", import.meta.url), "utf8")
   const bannerStart = source.indexOf('<div class="swiper-wrapper banner_slider_wrapper">')
@@ -43,12 +43,17 @@ test("homepage uses the standalone Longevity Month poster", async () => {
   const poster = await readFile(new URL("../images/zuzalu-longevity-month-2026.png", import.meta.url))
 
   assert.match(source, /<div class="swiper-slide banner_slider_item">\s*<div class="div-block-33 longevity-banner-frame">\s*<img src="images\/zuzalu-longevity-month-2026\.png" alt="Zuzalu Longevity Month 2026" class="image-13 longevity-banner-image">/)
-  assert.equal((source.match(/class="swiper-slide banner_slider_item"/g) || []).length, 1)
-  assert.doesNotMatch(source, /banner_slider_Swiper|swiper-bundle\.min\.js/)
+  assert.equal((source.match(/class="swiper-slide banner_slider_item"/g) || []).length, 2)
+  assert.ok(banner.indexOf('zuzalu-longevity-month-2026.png') < banner.indexOf('ethchiangmai-2026-5400x1500.webp'))
+  assert.match(source, /src="js\/banner-slider\.js\?v=20260905-ethchiangmai"/)
+  const slider = await readFile(new URL('../js/banner-slider.js', import.meta.url), 'utf8')
+  assert.match(slider, /initialSlide: 0/)
+  assert.match(slider, /delay: 7000/)
+  assert.match(slider, /loop: true/)
   assert.doesNotMatch(banner, /<a\b/)
   assert.equal(poster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a")
   assert.match(styles, /\.section-2 \.longevity-banner-image \{[\s\S]*?position: static;/)
-  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260904-longevity"/)
+  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260905-ethchiangmai"/)
 })
 
 test("homepage removes the two old event ads but keeps the organizer action", async () => {
