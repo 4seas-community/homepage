@@ -3,8 +3,12 @@
   if (!root || typeof Swiper === 'undefined') return;
 
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Touch browsers can leave :hover stuck on a tapped element, which would pause
+  // the carousel forever. Only honour hover where the pointer can actually leave.
+  const canHover = window.matchMedia('(hover: hover)').matches;
   const toggle = root.querySelector('.banner-slider-toggle');
   let paused = motion.matches;
+  let hovering = false;
   const slider = new Swiper(root, {
     initialSlide: 0,
     slidesPerView: 1,
@@ -16,23 +20,35 @@
   });
 
   const updatePlayback = () => {
-    const interacting = root.matches(':hover') || root.contains(document.activeElement);
-    if (paused || document.hidden || interacting) slider.autoplay.stop();
+    // The toggle lives inside the carousel, so focusing it must not count as
+    // interaction; otherwise pressing Play could never restart the rotation.
+    const focused = root.contains(document.activeElement) && document.activeElement !== toggle;
+    if (paused || document.hidden || hovering || focused) slider.autoplay.stop();
     else slider.autoplay.start();
+    if (!toggle) return;
     toggle.textContent = paused ? 'Play' : 'Pause';
     toggle.setAttribute('aria-label', paused ? 'Play slideshow' : 'Pause slideshow');
-    toggle.setAttribute('aria-pressed', String(paused));
   };
-  toggle.addEventListener('click', () => { paused = !paused; updatePlayback(); });
-  root.addEventListener('mouseenter', updatePlayback);
-  root.addEventListener('mouseleave', updatePlayback);
+
+  if (toggle) {
+    toggle.addEventListener('click', () => { paused = !paused; updatePlayback(); });
+  }
+  if (canHover) {
+    root.addEventListener('mouseenter', () => { hovering = true; updatePlayback(); });
+    root.addEventListener('mouseleave', () => { hovering = false; updatePlayback(); });
+  }
   root.addEventListener('focusin', updatePlayback);
   root.addEventListener('focusout', () => setTimeout(updatePlayback, 0));
   document.addEventListener('visibilitychange', updatePlayback);
-  motion.addEventListener('change', () => {
+
+  const onMotionChange = () => {
     paused = motion.matches;
     slider.params.speed = motion.matches ? 0 : 650;
     updatePlayback();
-  });
+  };
+  // Safari below 14 only implements the deprecated MediaQueryList.addListener.
+  if (typeof motion.addEventListener === 'function') motion.addEventListener('change', onMotionChange);
+  else if (typeof motion.addListener === 'function') motion.addListener(onMotionChange);
+
   updatePlayback();
 })();

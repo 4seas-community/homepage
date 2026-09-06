@@ -42,10 +42,10 @@ test("homepage keeps Longevity first and adds ETHChiangmai second", async () => 
   const banner = source.slice(bannerStart, bannerEnd)
   const poster = await readFile(new URL("../images/zuzalu-longevity-month-2026.png", import.meta.url))
 
-  assert.match(source, /<div class="swiper-slide banner_slider_item">\s*<div class="div-block-33 longevity-banner-frame">\s*<img src="images\/zuzalu-longevity-month-2026\.png" alt="Zuzalu Longevity Month 2026" class="image-13 longevity-banner-image">/)
+  assert.match(source, /<div class="swiper-slide banner_slider_item">\s*<div class="div-block-33 longevity-banner-frame">\s*<img src="images\/zuzalu-longevity-month-2026\.png" alt="Zuzalu Longevity Month 2026" class="image-13 longevity-banner-image"/)
   assert.equal((source.match(/class="swiper-slide banner_slider_item"/g) || []).length, 2)
-  assert.ok(banner.indexOf('zuzalu-longevity-month-2026.png') < banner.indexOf('ethchiangmai-2026-5400x1500.webp'))
-  assert.match(source, /src="js\/banner-slider\.js\?v=20260905-ethchiangmai"/)
+  assert.ok(banner.indexOf('zuzalu-longevity-month-2026.png') < banner.indexOf('ethchiangmai-2026-'))
+  assert.match(source, /src="js\/banner-slider\.js\?v=20260906-ethchiangmai"/)
   const slider = await readFile(new URL('../js/banner-slider.js', import.meta.url), 'utf8')
   assert.match(slider, /initialSlide: 0/)
   assert.match(slider, /delay: 7000/)
@@ -53,7 +53,60 @@ test("homepage keeps Longevity first and adds ETHChiangmai second", async () => 
   assert.doesNotMatch(banner, /<a\b/)
   assert.equal(poster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a")
   assert.match(styles, /\.section-2 \.longevity-banner-image \{[\s\S]*?position: static;/)
-  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260905-ethchiangmai"/)
+  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260906-ethchiangmai"/)
+})
+
+test("banner carousel ships its own Swiper assets and controls", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
+
+  // The carousel is inert without both vendor assets, so assert they are wired up
+  // locally and that no CDN copy sneaks back in.
+  assert.match(source, /<link href="css\/swiper-8\.4\.7\.min\.css\?v=8\.4\.7" rel="stylesheet"/)
+  assert.match(source, /<script src="js\/swiper-8\.4\.7\.min\.js\?v=8\.4\.7" defer><\/script>/)
+  assert.doesNotMatch(source, /unpkg\.com|cdn\.jsdelivr\.net|swiper-bundle/)
+
+  // Swiper must be parsed before the initialiser; both are deferred, so document
+  // order is execution order.
+  assert.ok(source.indexOf('js/swiper-8.4.7.min.js') < source.indexOf('js/banner-slider.js'))
+
+  // Pause/play and pagination markup the script depends on.
+  assert.match(source, /<div class="banner-slider-pagination"><\/div>/)
+  assert.match(source, /<button class="banner-slider-toggle" type="button" aria-label="Pause slideshow">Pause<\/button>/)
+  // The accessible name already carries the state; aria-pressed would contradict it.
+  assert.doesNotMatch(source, /banner-slider-toggle[^>]*aria-pressed/)
+})
+
+test("banner slider script survives missing controls and its own focus", async () => {
+  const slider = await readFile(new URL('../js/banner-slider.js', import.meta.url), 'utf8')
+
+  // Focusing the toggle must not count as interaction, or Play could never resume.
+  assert.match(slider, /document\.activeElement !== toggle/)
+  // Touch browsers keep :hover stuck after a tap; hover is only honoured on hover-capable pointers.
+  assert.match(slider, /\(hover: hover\)/)
+  assert.doesNotMatch(slider, /root\.matches\(':hover'\)/)
+  // Missing controls must degrade to a plain autoplaying carousel, not a TypeError.
+  assert.match(slider, /if \(!toggle\) return/)
+  assert.match(slider, /if \(toggle\) \{/)
+  // Safari below 14 only has the deprecated addListener.
+  assert.match(slider, /motion\.addListener/)
+})
+
+test("ETHChiangmai poster ships valid responsive WebP variants", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
+  const widths = [1350, 2700, 5400]
+  const heights = [375, 750, 1500]
+
+  assert.match(source, /srcset="images\/ethchiangmai-2026-1350x375\.webp 1350w, images\/ethchiangmai-2026-2700x750\.webp 2700w, images\/ethchiangmai-2026-5400x1500\.webp 5400w"/)
+  assert.match(source, /sizes="100vw"/)
+
+  for (const [index, width] of widths.entries()) {
+    const name = `ethchiangmai-2026-${width}x${heights[index]}.webp`
+    const bytes = await readFile(new URL(`../images/${name}`, import.meta.url))
+    // RIFF....WEBP magic bytes, mirroring the PNG signature check above.
+    assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF", `${name} is not a RIFF container`)
+    assert.equal(bytes.subarray(8, 12).toString("ascii"), "WEBP", `${name} is not a WebP file`)
+    assert.ok(source.includes(name), `${name} is not referenced by index.html`)
+  }
 })
 
 test("homepage removes the two old event ads but keeps the organizer action", async () => {
