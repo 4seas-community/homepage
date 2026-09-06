@@ -4,6 +4,7 @@ set -euo pipefail
 readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly repo_root="$(cd "${script_dir}/.." && pwd)"
 readonly release_state_dir="${repo_root}/.release"
+stage=""
 readonly remote_base="/opt/4seas-home"
 readonly public_url="https://4seas.xyz/"
 # shellcheck source=operator-common.sh
@@ -44,13 +45,56 @@ write_plan_value() {
   printf '%s=%q\n' "$1" "$2"
 }
 
+# macOS tar stores extended attributes (com.apple.provenance survives `xattr -c`
+# on macOS 26) as AppleDouble "._name" members, and then hides those same members
+# again when listing the archive it just wrote. `tar -tzf` therefore cannot be
+# trusted to describe an artifact built on macOS: the 20260904T105214Z and
+# 20260906T023713Z releases both reached the server carrying ~160 stray "._"
+# files and were refused there, after the upload. Read the archive with a
+# platform-neutral reader so that failure surfaces locally instead.
+verify_artifact() {
+  local archive="$1" expected_files="$2"
+  command -v python3 >/dev/null 2>&1 || fail \
+    "python3 is required to verify the release artifact"
+  python3 - "${archive}" "${expected_files}" <<'PYVERIFY' || fail \
+    "artifact verification failed"
+import sys, tarfile
+
+archive, expected = sys.argv[1], int(sys.argv[2])
+problems, files = [], 0
+
+with tarfile.open(archive) as tar:
+    for member in tar.getmembers():
+        name = member.name
+        parts = name.split("/")
+        if name.startswith("/") or ".." in parts or name in (".", "./", ""):
+            problems.append("unsafe path: %s" % name)
+        if parts[-1].startswith("._"):
+            problems.append("AppleDouble metadata: %s" % name)
+        if member.isfile():
+            files += 1
+        elif not member.isdir():
+            problems.append("not a regular file or directory: %s" % name)
+
+if files != expected:
+    problems.append("archive holds %d files, expected %d" % (files, expected))
+
+for line in problems[:10]:
+    print(line, file=sys.stderr)
+if len(problems) > 10:
+    print("... and %d more" % (len(problems) - 10), file=sys.stderr)
+
+sys.exit(1 if problems else 0)
+PYVERIFY
+}
+
 plan_release() {
   prepare_operator_access
   prepare_gitea_access
   require_clean_synced_main
   node --test tests/*.test.mjs
 
-  local commit short timestamp release_name release_path stage artifact plan
+  local commit short timestamp release_name release_path artifact plan
   local artifact_sha index_sha file_count old_release remote_status remote_site
   commit="$(git rev-parse HEAD)"
   short="$(git rev-parse --short=7 HEAD)"
@@ -63,7 +107,7 @@ plan_release() {
   stage="$(mktemp -d "${release_state_dir}/stage.${release_name}.XXXXXX")"
   artifact="${release_state_dir}/${release_name}.tar.gz"
   plan="${release_state_dir}/${release_name}.plan"
-  trap 'rm -rf "${stage}"' EXIT
+  trap 'if [[ -n "${stage}" ]]; then rm -rf "${stage}"; fi' EXIT
 
   rsync -a 404.html favicon.ico index.html css images js "${stage}/"
   if command -v xattr >/dev/null 2>&1; then
@@ -77,11 +121,14 @@ plan_release() {
     printf 'tests=node --test tests/*.test.mjs\n'
   } >"${stage}/RELEASE-MANIFEST.txt"
 
-  tar -C "${stage}" -czf "${artifact}" \
+  # COPYFILE_DISABLE keeps macOS tar from emitting AppleDouble members for the
+  # xattrs it cannot strip; GNU tar ignores the variable, so this stays portable.
+  COPYFILE_DISABLE=1 tar -C "${stage}" -czf "${artifact}" \
     404.html favicon.ico index.html css images js RELEASE-MANIFEST.txt
+  file_count="$(find "${stage}" -type f | wc -l | tr -d ' ')"
+  verify_artifact "${artifact}" "${file_count}"
   artifact_sha="$(shasum -a 256 "${artifact}" | awk '{print $1}')"
   index_sha="$(shasum -a 256 "${stage}/index.html" | awk '{print $1}')"
-  file_count="$(find "${stage}" -type f | wc -l | tr -d ' ')"
 
   old_release="$(ssh_244 "readlink -f ${remote_base}/current")"
   [[ "${old_release}" == "${remote_base}/releases/"* ]] || fail \
@@ -182,10 +229,7 @@ apply_release() {
   node --test tests/*.test.mjs
   [[ "$(shasum -a 256 "${PLAN_ARTIFACT}" | awk '{print $1}')" == "${PLAN_ARTIFACT_SHA}" ]] || fail \
     "artifact checksum changed after planning"
-  tar -tzf "${PLAN_ARTIFACT}" | awk '
-    /^\// || /(^|\/)\.\.($|\/)/ || /^\.\/?$/ { bad=1 }
-    END { exit bad ? 1 : 0 }
-  ' || fail "artifact contains an unsafe path"
+  verify_artifact "${PLAN_ARTIFACT}" "${PLAN_FILE_COUNT}"
 
   [[ "$(ssh_244 "readlink -f ${remote_base}/current")" == "${PLAN_OLD_RELEASE}" ]] || fail \
     "current release changed after planning; create a new plan"
