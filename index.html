@@ -7,7 +7,8 @@
   <meta content="Webflow" name="generator">
   <link href="css/normalize.css" rel="stylesheet" type="text/css">
   <link href="css/webflow.css" rel="stylesheet" type="text/css">
-  <link href="css/4seas-631dbf.webflow.css?v=20260904-longevity" rel="stylesheet" type="text/css">
+  <link href="css/swiper-8.4.7.min.css?v=8.4.7" rel="stylesheet" type="text/css">
+  <link href="css/4seas-631dbf.webflow.css?v=20260906-ethchiangmai" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
@@ -49,17 +50,27 @@
   </div>
   <section class="section-2">
     <div class="div-block-32">
-      <div class="swiper banner_slider">
+      <div class="swiper banner_slider" role="region" aria-label="Featured events" aria-roledescription="carousel">
         <div class="swiper-wrapper banner_slider_wrapper">
           <div class="swiper-slide banner_slider_item">
             <div class="div-block-33 longevity-banner-frame">
-              <img src="images/zuzalu-longevity-month-2026.png" alt="Zuzalu Longevity Month 2026" class="image-13 longevity-banner-image">
+              <img src="images/zuzalu-longevity-month-2026.png" alt="Zuzalu Longevity Month 2026" class="image-13 longevity-banner-image" width="5400" height="1500" decoding="async">
+            </div>
+          </div>
+          <div class="swiper-slide banner_slider_item">
+            <div class="div-block-33 longevity-banner-frame">
+              <img src="images/ethchiangmai-2026-2700x750.webp" srcset="images/ethchiangmai-2026-1350x375.webp 1350w, images/ethchiangmai-2026-2700x750.webp 2700w, images/ethchiangmai-2026-5400x1500.webp 5400w" sizes="100vw" alt="ETHChiangmai 2026 — CROPS: The Non-Negotiables of Ethereum. Chiang Mai, Thailand · Nov 11, 2026 – Jan 3, 2027. Unconference, Coliving, Nomad Market, Hackathon, Summit." class="image-13 longevity-banner-image" width="5400" height="1500" decoding="async">
             </div>
           </div>
         </div>
+        <div class="banner-slider-controls">
+          <div class="banner-slider-pagination"></div>
+          <button class="banner-slider-toggle" type="button" aria-label="Pause slideshow">Pause</button>
+        </div>
       </div>
       <div class="code_hide w-embed w-script">
-        <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css">
+        <script src="js/swiper-8.4.7.min.js?v=8.4.7" defer></script>
+        <script src="js/banner-slider.js?v=20260906-ethchiangmai" defer></script>
       </div>
     </div>
   </section>

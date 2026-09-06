@@ -2559,11 +2559,103 @@
   width: 100%;
   height: auto;
   min-height: 0;
-  transform: none;
 }
 
 .section-2 .banner_slider_wrapper {
-  display: block;
+  display: flex;
+}
+
+.section-2 .banner_slider {
+  overflow: hidden;
+  aspect-ratio: 18 / 5;
+}
+
+.section-2 .banner_slider_item {
+  flex-shrink: 0;
+}
+
+.banner-slider-controls {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  background: rgba(26, 18, 64, .82);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.banner-slider-pagination {
+  display: flex;
+  gap: 8px;
+}
+
+.banner-slider-pagination .swiper-pagination-bullet {
+  /* Swiper's default .2 opacity is unreadable on top of a busy poster. */
+  opacity: .45;
+  margin: 0;
+  background: white;
+}
+
+.banner-slider-pagination .swiper-pagination-bullet-active {
+  opacity: 1;
+}
+
+.banner-slider-toggle {
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.banner-slider-toggle:focus-visible,
+.banner-slider-pagination .swiper-pagination-bullet:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+
+@media screen and (max-width: 767px) {
+  .banner-slider-controls {
+    bottom: 5px;
+    right: 7px;
+    gap: 8px;
+    padding: 2px 8px;
+  }
+
+  .banner-slider-pagination {
+    gap: 6px;
+  }
+
+  .banner-slider-toggle {
+    font-size: 11px;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  /* The banner is only ~108px tall here; a text label would cover the poster.
+     The glyph follows aria-label, which the slider script keeps in sync. */
+  .banner-slider-toggle {
+    font-size: 0;
+    line-height: 1;
+  }
+
+  .banner-slider-toggle:before {
+    font-size: 10px;
+  }
+
+  .banner-slider-toggle[aria-label^="Pause"]:before {
+    content: "❙❙";
+  }
+
+  .banner-slider-toggle[aria-label^="Play"]:before {
+    content: "▶";
+  }
 }
 
 .section-2 .longevity-banner-image {
