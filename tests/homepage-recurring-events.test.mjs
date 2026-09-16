@@ -53,7 +53,7 @@ test("homepage keeps Longevity first and adds ETHChiangmai second", async () => 
   assert.doesNotMatch(banner, /<a\b/)
   assert.equal(poster.subarray(0, 8).toString("hex"), "89504e470d0a1a0a")
   assert.match(styles, /\.section-2 \.longevity-banner-image \{[\s\S]*?position: static;/)
-  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260906-ethchiangmai"/)
+  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20260916-event-contact"/)
 })
 
 test("banner carousel ships its own Swiper assets and controls", async () => {
