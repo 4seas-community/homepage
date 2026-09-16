@@ -114,7 +114,8 @@ test("homepage removes the two old event ads but keeps the organizer action", as
 
   assert.doesNotMatch(source, /href="https:\/\/ethchiangmai\.com\/"/)
   assert.doesNotMatch(source, /href="https:\/\/cypherpunk\.town\/"/)
-  assert.match(source, /href="https:\/\/linktr\.ee\/tk4seas"[^>]*>[\s\S]*?I want to organize an event/)
+  assert.match(source, /href="https:\/\/linktr\.ee\/4seasevent"[^>]*rel="noopener noreferrer"[^>]*>[\s\S]*?I want to organize an event/)
+  assert.doesNotMatch(source, /tk4seas/)
 })
 
 test("homepage navigation links Coliving to its local route", async () => {
