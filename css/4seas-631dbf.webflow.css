@@ -1836,6 +1836,26 @@
   display: block;
 }
 
+.event-contact-link {
+  color: var(--light-green);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .18em;
+}
+
+.event-contact-link:hover,
+.event-contact-link:focus-visible {
+  color: var(--white);
+  text-decoration-thickness: 2px;
+}
+
+.event-contact-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
 .deliverable-list-item-rrr {
   text-align: left;
   background-color: #d78484;
