@@ -26,11 +26,10 @@ test("homepage events load from the first-party event mirror API", async () => {
   assert.doesNotMatch(source, /\/event\/list\?collection=/)
 })
 
-test("homepage event gallery and coliving links stay on 4Seas properties", async () => {
+test("homepage event gallery link stays on 4Seas properties", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
 
   assert.match(source, /href="https:\/\/4seas\.xyz\/event"[^>]*>GO check out 4Seas Event Gallery<\/a>/)
-  assert.match(source, /href="https:\/\/4seas\.xyz\/coliving"/)
   assert.doesNotMatch(source, /href="https:\/\/app\.sola\.day\/event\/4seas"/)
 })
 
@@ -118,10 +117,14 @@ test("homepage removes the two old event ads but keeps the organizer action", as
   assert.doesNotMatch(source, /tk4seas/)
 })
 
-test("homepage navigation links Coliving to its local route", async () => {
+// Coliving is hidden while the hotel license is pending; no public page may
+// link to it or advertise it until it is reinstated.
+test("homepage and 404 page do not mention or link to coliving", async () => {
+  for (const file of ["../index.html", "../404.html", "../js/site-not-found.js"]) {
+    const source = await readFile(new URL(file, import.meta.url), "utf8")
+    assert.doesNotMatch(source, /co-?living|共享居住|โคลิฟวิ่ง/i, file)
+  }
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
-
-  assert.match(source, /<a href="\/coliving" class="fn-navbar-link-box w-nav-link">Coliving<\/a>/)
   assert.doesNotMatch(source, />Tribes<\/a>/)
 })
 
