@@ -27,7 +27,7 @@ test('public validator accepts exact payload and refuses a stale asset or missin
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
   try {
     const args=['scripts/validate-longevity.py','--base-url',`http://127.0.0.1:${server.address().port}/`];
-    let result=await run(args);assert.equal(result.code,0,result.stderr);assert.match(result.stdout,/Verified 25/);
+    let result=await run(args);assert.equal(result.code,0,result.stderr);assert.match(result.stdout,/Verified 24/);
     mode='stale';result=await run(args);assert.notEqual(result.code,0);assert.match(result.stderr,/Content hash mismatch/);
     mode='missing';result=await run(args);assert.notEqual(result.code,0);assert.match(result.stderr,/404/);
   } finally {await new Promise(resolve=>server.close(resolve));}

@@ -67,7 +67,7 @@ git pull --ff-only origin main
 - `/longevity/` 默认英文；语言由网址决定，仅点击语言按钮才写入 `4seas-longevity-language`，浏览页面不写存储。
 - 图片完整；版本化的 CSS/JS/日历 JSON 为本次内容，不能仅凭 HTTP 200 判断缓存正确。
 - 重要日期、Conference 大写、Nomad Market 命名、八项检测顺序、睡眠教练、Peptide 与隐私内容正确。
-- 活动公开快照时间写在 `longevity/assets/longevity-events.json` 的 `asOf` 中（本次为 2026-10-17）。页面优先从 `api.sola.day` 实时加载活动（失败、超时或为空时回退到该快照），并随时间划分往期/即将举行；快照仅作兜底，更新它应另做提交并升级版本号。
+- 活动只从 `api.sola.day` 实时加载，并随时间划分往期/即将举行。没有快照兜底，页面也不预置活动卡片：载入失败或超时（12 秒）就明确显示失败并引导到实时日历，避免把过期活动当成即将举行展示。
 - 不应有本地地址、设计稿 `.html` 路径或未发布 Host/Canteen/共居链接。
 - 独立终端运行 `python3 scripts/validate-longevity.py`；浏览器做一次桌面和手机宽度人工验收。
 - 保存实际发布包、提交号、校验值、旧/新版本路径和 Nginx 重载记录。

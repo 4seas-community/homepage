@@ -315,8 +315,8 @@ JavaScript; explicit locale paths are `/longevity/en/`, `/longevity/zh/` and
 click is remembered (`localStorage` key `4seas-longevity-language`), and only
 the bare `/longevity/` entry redirects to a remembered zh/th choice. Viewing a
 page never writes storage and explicit locale paths never redirect. The event
-calendar loads live from `api.sola.day`, with the bundled
-`longevity-events.json` snapshot as fallback.
+calendar loads live from `api.sola.day` only; if that fails the page says so.
+There is deliberately no bundled snapshot or pre-rendered event list.
 
 `release-244.sh` includes the directory in staging, packaging and hash comparison.
 Its baseline reader permits the previous release to lack this new directory.

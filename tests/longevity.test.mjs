@@ -13,7 +13,15 @@ const read = path => readFileSync(join(root, path), 'utf8');
 const { prepareEvents, selectEvents } = await import(
   'data:text/javascript,' + encodeURIComponent(read('longevity/assets/longevity-calendar-data.js')));
 const locales = ['en', 'zh', 'th'];
-const data = JSON.parse(read('longevity/assets/longevity-events.json'));
+// Sola data captured on 2026-10-17, kept only as a test fixture: the page itself
+// never ships or falls back to a snapshot.
+const data = JSON.parse(read('tests/fixtures/longevity-events-2026-10-17.json'));
+const toSola = e => ({id:e.id,title:e.title,start_time:e.start,end_time:e.end,tags:e.tags,category:e.category,status:'published',visibility:'normal',venue:e.venue?{name:e.venue}:null,image_url:e.cover,owner:e.host?{name:e.host}:null});
+const solaFetch = rows => async url => {
+  const u=new URL(url);assert.equal(u.origin+u.pathname,'https://api.sola.day/api/v1/events');
+  const all=u.searchParams.get('collection')==='upcoming'&&u.searchParams.get('tags')==='Longevity';
+  return {ok:true,json:async()=>({data:all?rows:[],meta:{page:1,next_page:null}})};
+};
 const runtime = read('longevity/assets/site-i18n.js');
 
 test('standalone pages resolve local dependencies, anchors and all three language entries', () => {
@@ -32,7 +40,7 @@ test('standalone pages resolve local dependencies, anchors and all three languag
         let file = join(root, url.pathname);
         if (url.pathname.endsWith('/')) file += 'index.html';
         assert(existsSync(file), `${path}: ${reference}`);
-        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), '20261017c');
+        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), '20261017d');
       }
     }
     assert.match(html, /href="https:\/\/linktr\.ee\/ZuzaluLongevityChiangMai"/);
@@ -46,7 +54,7 @@ test('standalone pages resolve local dependencies, anchors and all three languag
   assert.match(read('index.html'), /href="\/longevity\/"[^>]*>Longevity<\/a>/);
 });
 
-test('public event snapshot keeps only display fields, real profiles and valid period boundaries', () => {
+test('Sola fixture maps to display fields, real profiles and valid period boundaries', () => {
   const allowed = new Set(['id','title','start','end','tags','category','venue','cover','host','hostName','url','hostUrl']);
   assert.equal(data.events.length, 213);
   for (const e of data.events) {
@@ -120,7 +128,7 @@ test('nested locale URLs preserve query and section; only an explicit language c
   b2.selectors.set('[data-language]',[l2]);b2.ready.forEach(fn=>fn());l2.href='https://4seas.xyz'+l2.href;assert.doesNotThrow(()=>l2.fire('click'));
 });
 
-test('EN/TH calendar loads its shipped data, pages, searches and handles network failure', async () => {
+test('EN/TH calendar loads live Sola data, pages, searches and handles network failure', async () => {
   const source=read('longevity/assets/longevity-v6.js').replace(/^import .*?;\n/,'');
   const settle=async()=>{await new Promise(setImmediate);await new Promise(setImmediate);};
   for(const lang of ['en','th']) for(const unavailable of [false,true]) {
@@ -130,10 +138,10 @@ test('EN/TH calendar loads its shipped data, pages, searches and handles network
     const periods=['upcoming','past'].map(p=>{const e=new Element('button');e.dataset.lPeriod=p;return e;});
     c.selectors.set('[data-l-period]',periods);c.ctx.prepareEvents=prepareEvents;c.ctx.selectEvents=selectEvents;
     c.ctx.Date=class extends Date {static now(){return Date.parse('2026-10-17T12:00:00+07:00');}};
-    c.ctx.fetch=async url=>{assert.equal(url,'/longevity/assets/longevity-events.json?v=20261017c');if(unavailable)throw Error('offline');return{ok:true,json:async()=>data};};
+    c.ctx.fetch=unavailable?async()=>{throw Error('offline');}:solaFetch(data.events.map(toSola));
     vm.runInContext(source,c.ctx);await settle();
     const status=c.ids.get('l-event-status');assert(!/[\u4e00-\u9fff]/.test(status.textContent),status.textContent);
-    if(unavailable){assert.equal(c.ids.get('l-more').hidden,true);continue;}
+    if(unavailable){assert.equal(c.ids.get('l-more').hidden,true);assert.equal(c.ids.get('l-event-grid').children.length,1);continue;}
     assert.equal(c.ids.get('l-event-grid').children.length,6);
     c.ids.get('l-more').fire('click');assert.equal(c.ids.get('l-event-grid').children.length,12);
     periods[1].fire('click');assert.equal(c.ids.get('l-past-count').textContent,'195');
@@ -143,10 +151,9 @@ test('EN/TH calendar loads its shipped data, pages, searches and handles network
   }
 });
 
-test('calendar loads live from Sola, falls back to the snapshot, and reports total failure', async () => {
+test('calendar loads only live Sola data and fails visibly without any snapshot', async () => {
   const source=read('longevity/assets/longevity-v6.js').replace(/^import .*?;\n/,'');
   const settle=async()=>{for(let i=0;i<8;i++)await new Promise(setImmediate);};
-  const SNAP='/longevity/assets/longevity-events.json?v=20261017c';
   const row=(id,extra={})=>({id,title:'Live '+id,start_time:'2026-11-01T03:00:00Z',end_time:'2026-11-01T05:00:00Z',tags:['Longevity'],category:'x',status:'published',visibility:'public',venue:{name:'V'},image_url:null,owner:{name:'host'+id},...extra});
   const run=async fetch=>{
     const c=context('en');
@@ -161,7 +168,7 @@ test('calendar loads live from Sola, falls back to the snapshot, and reports tot
   const urls=[];
   let c=await run(async url=>{
     urls.push(url);
-    if(url===SNAP)throw Error('snapshot must not be used');
+    assert(url.startsWith('https://api.sola.day/'),'only Sola may be requested: '+url);
     const u=new URL(url);assert.equal(u.origin+u.pathname,'https://api.sola.day/api/v1/events');
     assert.equal(u.searchParams.get('group_id'),'4seas');assert.equal(u.searchParams.get('timezone'),'Asia/Bangkok');assert.equal(u.searchParams.get('limit'),'100');
     const tag=u.searchParams.get('tags'),coll=u.searchParams.get('collection'),page=u.searchParams.get('page');
@@ -175,16 +182,18 @@ test('calendar loads live from Sola, falls back to the snapshot, and reports tot
   assert.equal(urls.length,5);assert(urls.every(u=>u.startsWith('https://api.sola.day/')));
   assert.equal(c.ids.get('l-upcoming-count').textContent,'2');
   const text=c.ids.get('l-event-grid').textContent;assert(text.includes('Live u1')&&text.includes('Live u2'));assert(!text.includes('hid')&&!text.includes('draft'));
-  // Live failures (throw, non-OK, bad JSON, empty) fall back to the snapshot.
-  for(const live of [()=>{throw Error('offline');},()=>({ok:false}),()=>({ok:true,json:async()=>{throw Error('bad');}}),()=>({ok:true,json:async()=>({data:[],meta:{next_page:null}})})]) {
+  // Every live failure is shown as a failure: no snapshot request, no stale cards.
+  for(const live of [()=>{throw Error('offline');},()=>({ok:false}),()=>({ok:true,json:async()=>{throw Error('bad');}}),()=>({ok:true,json:async()=>({oops:1})})]) {
     const seen=[];
-    c=await run(async url=>{seen.push(url);if(url===SNAP)return{ok:true,json:async()=>data};return live();});
-    assert.equal(seen.at(-1),SNAP);assert.equal(c.ids.get('l-upcoming-count').textContent,'18');
+    c=await run(async url=>{seen.push(url);return live();});
+    assert(seen.length>0&&seen.every(u=>u.startsWith('https://api.sola.day/')),seen.join());
+    assert.equal(c.ids.get('l-more').hidden,true);assert.equal(c.ids.get('l-upcoming-count').textContent,'');
+    assert.equal(c.ids.get('l-event-grid').children.length,1);
+    assert.match(c.ids.get('l-event-status').textContent,/could not be loaded from Sola/);
   }
-  // Both fail: the failure status is shown.
-  c=await run(async url=>{if(url===SNAP)return{ok:false};throw Error('offline');});
-  assert.equal(c.ids.get('l-more').hidden,true);assert.match(c.ids.get('l-event-status').textContent,/./);
-  assert.equal(c.ids.get('l-upcoming-count').textContent,'');
+  // An empty but successful answer is a real result, not a failure.
+  c=await run(async()=>({ok:true,json:async()=>({data:[],meta:{next_page:null}})}));
+  assert.equal(c.ids.get('l-upcoming-count').textContent,'0');
 });
 
 test('Longevity payload ships no .mjs files', () => {
@@ -194,5 +203,14 @@ test('Longevity payload ships no .mjs files', () => {
   assert.deepEqual(files.filter(f => f.endsWith('.mjs')), []);
   for (const locale of ['', ...locales.map(l => l + '/')]) {
     assert.doesNotMatch(read(`longevity/${locale}index.html`), /\.mjs\b/);
+  }
+});
+
+test('Longevity pages ship no baked-in events and the payload has no snapshot', () => {
+  assert.equal(existsSync(join(root, 'longevity/assets/longevity-events.json')), false);
+  for (const locale of ['', ...locales.map(l => l + '/')]) {
+    const html = read(`longevity/${locale}index.html`);
+    assert.doesNotMatch(html, /l-event-card|longevity-events|2026\.10\.17/);
+    assert.match(html, /id="l-event-grid" class="l-event-grid" aria-busy="true"><\/div>/);
   }
 });
