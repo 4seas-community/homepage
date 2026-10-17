@@ -3,8 +3,8 @@
 import argparse
 import concurrent.futures
 import hashlib
+import subprocess
 from pathlib import Path
-from urllib.request import Request, urlopen
 
 
 def public_path(relative):
@@ -22,11 +22,18 @@ def validate(root, base_url):
     def check(path):
         relative = path.relative_to(root)
         url = base_url.rstrip('/') + '/' + public_path(relative)
-        request = Request(url, headers={'User-Agent': '4Seas-release-validation'})
-        with urlopen(request, timeout=20) as response:
-            content = response.read()
-            if response.status != 200:
-                raise ValueError('HTTP failure: ' + str(relative))
+        # Use the same TLS-verifying curl as the release script; macOS Python
+        # installations may not have a configured CA bundle of their own.
+        response = subprocess.run(
+            ['curl', '--fail', '--silent', '--show-error', '--connect-timeout', '5',
+             '--max-time', '20', '--write-out', '\n%{http_code}', url],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+        if response.returncode:
+            raise ValueError('HTTP request failed for %s: %s' %
+                             (relative, response.stderr.decode(errors='replace').strip()))
+        content, status = response.stdout.rsplit(b'\n', 1)
+        if status != b'200':
+            raise ValueError('HTTP failure: ' + str(relative))
         if hashlib.sha256(content).digest() != hashlib.sha256(path.read_bytes()).digest():
             raise ValueError('Content hash mismatch: ' + str(relative))
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
