@@ -19,7 +19,7 @@
 | --- | --- |
 | 11 月 30 日 | Longevity Month Opening |
 | 12 月 24–25 日 | Nomad Market |
-| 12 月 26–27 日 | ETHChiangmai @ Longevity Hackathon 2026 & Conference |
+| 12 月 26–27 日 | ETHChiangmai & Longevity Hackathon 2026 & Conference |
 | 12 月 28 日 | Longevity Summit |
 
 不再使用旧 deck 的 11 月 23 日开幕、12 月 20 日结束日期，也不将这组活动写成固定四周课程。
