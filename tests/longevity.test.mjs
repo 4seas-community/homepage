@@ -4,10 +4,14 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import vm from 'node:vm';
-import { prepareEvents, selectEvents } from '../longevity/assets/longevity-calendar-data.mjs';
-
+import { execSync } from 'node:child_process';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(join(root, path), 'utf8');
+// The browser modules ship as .js (production nginx serves .mjs as
+// application/octet-stream, which browsers refuse to run as a module), so load
+// them as ES modules explicitly instead of relying on Node's .js detection.
+const { prepareEvents, selectEvents } = await import(
+  'data:text/javascript,' + encodeURIComponent(read('longevity/assets/longevity-calendar-data.js')));
 const locales = ['en', 'zh', 'th'];
 const data = JSON.parse(read('longevity/assets/longevity-events.json'));
 const runtime = read('longevity/assets/site-i18n.js');
@@ -100,7 +104,7 @@ test('nested locale URLs preserve language preference, query and section without
 });
 
 test('EN/TH calendar loads its shipped data, pages, searches and handles network failure', async () => {
-  const source=read('longevity/assets/longevity-v6.mjs').replace(/^import .*?;\n/,'');
+  const source=read('longevity/assets/longevity-v6.js').replace(/^import .*?;\n/,'');
   const settle=async()=>{await new Promise(setImmediate);await new Promise(setImmediate);};
   for(const lang of ['en','th']) for(const unavailable of [false,true]) {
     const c=context(lang);
@@ -119,5 +123,15 @@ test('EN/TH calendar loads its shipped data, pages, searches and handles network
     c.ids.get('l-search').value='this-event-does-not-exist';c.ids.get('l-search').fire('input');
     assert.equal(c.ids.get('l-event-grid').children.length,1);
     assert(!/[\u4e00-\u9fff]/.test(c.ids.get('l-event-grid').textContent));
+  }
+});
+
+test('Longevity payload ships no .mjs files', () => {
+  // Production nginx has no .mjs MIME mapping and sends nosniff, so a .mjs
+  // module script is rejected by every browser even though it works locally.
+  const files = execSync('git ls-files longevity', { cwd: root, encoding: 'utf8' }).split('\n');
+  assert.deepEqual(files.filter(f => f.endsWith('.mjs')), []);
+  for (const locale of ['', ...locales.map(l => l + '/')]) {
+    assert.doesNotMatch(read(`longevity/${locale}index.html`), /\.mjs\b/);
   }
 });

@@ -1,4 +1,4 @@
-import { prepareEvents, selectEvents } from './longevity-calendar-data.mjs?v=20261017';
+import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017';
 const t = value => window.siteT ? window.siteT(value) : value;
 
 const grid = document.getElementById('l-event-grid');
