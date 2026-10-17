@@ -4,7 +4,7 @@
 
 ## 本次上线范围
 
-- 新增 `https://4seas.xyz/longevity/`：始终默认英文，不记忆、不按偏好跳转（2026-10-17 修正）。
+- 新增 `https://4seas.xyz/longevity/`：默认英文；仅在点击语言按钮后记住选择（`4seas-longevity-language`），且只有默认入口 `/longevity/` 会按该选择跳转，浏览页面不写存储、显式语言路径不跳转。
 - 英文 `/longevity/en/`、中文 `/longevity/zh/`、泰语 `/longevity/th/`；切换顺序 EN / 中文 / ไทย，保留所在区块和查询参数。
 - 包含 Longevity Month、日常实践、八项检测、睡眠房间与睡眠教练、Peptide、个人与社区数据中心、活动日历、建设与参与方式。
 - 咨询统一指向 `https://linktr.ee/ZuzaluLongevityChiangMai`。
@@ -64,10 +64,10 @@ git pull --ff-only origin main
 
 - 现有首页正常，菜单 Longevity 可到达新页。
 - 四个入口均 HTTP 200：`/longevity/`、`/longevity/en/`、`/longevity/zh/`、`/longevity/th/`。
-- `/longevity/` 始终是英文；语言只由网址决定，不读写本地存储。
+- `/longevity/` 默认英文；语言由网址决定，仅点击语言按钮才写入 `4seas-longevity-language`，浏览页面不写存储。
 - 图片完整；版本化的 CSS/JS/日历 JSON 为本次内容，不能仅凭 HTTP 200 判断缓存正确。
 - 重要日期、Conference 大写、Nomad Market 命名、八项检测顺序、睡眠教练、Peptide 与隐私内容正确。
-- 活动公开快照时间写在 `longevity/assets/longevity-events.json` 的 `asOf` 中（本次为 2026-10-17）。页面会随时间划分往期/即将举行，但不会自动从 Sola 同步新增活动；实时安排入口仍到现有活动系统。后续更新应另做提交并升级 JSON 版本号。
+- 活动公开快照时间写在 `longevity/assets/longevity-events.json` 的 `asOf` 中（本次为 2026-10-17）。页面优先从 `api.sola.day` 实时加载活动（失败、超时或为空时回退到该快照），并随时间划分往期/即将举行；快照仅作兜底，更新它应另做提交并升级版本号。
 - 不应有本地地址、设计稿 `.html` 路径或未发布 Host/Canteen/共居链接。
 - 独立终端运行 `python3 scripts/validate-longevity.py`；浏览器做一次桌面和手机宽度人工验收。
 - 保存实际发布包、提交号、校验值、旧/新版本路径和 Nginx 重载记录。

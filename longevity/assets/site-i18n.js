@@ -22,20 +22,28 @@ const SITE_CATALOG = {"跳到主要内容":["Skip to main content","ข้าม
   window.siteLocale = {zh:'zh-CN',en:'en-GB',th:'th-TH-u-ca-gregory'}[locale];
   window.siteT = translate;
   window.siteHref = href;
+  const LANG_KEY = '4seas-longevity-language';
+  // Only an explicit language-button click is remembered (never a page view),
+  // and only the bare /longevity/ entry honours it; explicit locale paths never redirect.
+  if (/^\/longevity\/?(?:index\.html)?$/.test(location.pathname)) {
+    let saved = null;
+    try { saved = localStorage.getItem(LANG_KEY); } catch {}
+    if (saved === 'zh' || saved === 'th') { location.replace('/longevity/' + saved + '/' + location.search + location.hash); return; }
+  }
   document.addEventListener('DOMContentLoaded', () => {
     const picker = document.querySelector('.site-language-picker');
     if (picker) {
       document.addEventListener('click', event => { if (!picker.contains(event.target)) picker.removeAttribute('open'); });
       picker.addEventListener('keydown', event => { if (event.key === 'Escape') { picker.removeAttribute('open'); picker.querySelector('summary')?.focus(); } });
     }
-    // /longevity/ is always English. The language follows the URL only: no
-    // remembered preference may redirect the default entry to another locale.
+    // The language follows the URL; a click on a language link is the only thing that is remembered.
     document.querySelectorAll('[data-language]').forEach(link => {
       const url = new URL(link.href);
       url.search = location.search;
       url.hash = location.hash;
       link.href = url.pathname + url.search + url.hash;
       link.addEventListener('click', () => {
+        try { if (['en', 'zh', 'th'].includes(link.dataset.language)) localStorage.setItem(LANG_KEY, link.dataset.language); } catch {}
         const target = new URL(link.href);
         const section = [...document.querySelectorAll('main section[id]')].reverse().find(el => el.getBoundingClientRect().top <= 160);
         if (section) target.hash = section.id;

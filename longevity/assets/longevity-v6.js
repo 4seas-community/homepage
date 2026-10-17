@@ -1,4 +1,4 @@
-import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017b';
+import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017c';
 const t = value => window.siteT ? window.siteT(value) : value;
 
 const grid = document.getElementById('l-event-grid');
@@ -61,18 +61,64 @@ function render(focusAt = null) {
   if (focusAt !== null) grid.children[focusAt]?.querySelector('a')?.focus({ preventScroll: true });
 }
 
+const SOLA_API = 'https://api.sola.day/api/v1/events';
+const SNAPSHOT_URL = '/longevity/assets/longevity-events.json?v=20261017c';
+
+function fromSola(row) {
+  if (!row || row.status !== 'published' || row.visibility === 'private') return null;
+  const name = row.owner?.name || '';
+  return {
+    id: row.id, title: row.title, start: row.start_time, end: row.end_time, tags: row.tags || [], category: row.category,
+    venue: row.venue?.name || null, cover: row.image_url || null, host: name, hostName: name,
+    url: 'https://sola.day/event/detail/' + encodeURIComponent(row.id),
+    hostUrl: name ? 'https://sola.day/profile/' + encodeURIComponent(name) : null
+  };
+}
+
+async function liveQuery(collection, tag, signal) {
+  const rows = [];
+  let page = 1;
+  for (let i = 0; i < 5 && page; i++) {
+    const params = new URLSearchParams({ group_id: '4seas', timezone: 'Asia/Bangkok', collection, limit: '100', tags: tag, page: String(page) });
+    const response = await fetch(`${SOLA_API}?${params}`, { signal });
+    if (!response.ok) throw new Error('Live events are unavailable');
+    const body = await response.json();
+    if (!Array.isArray(body.data)) throw new Error('Live events are malformed');
+    rows.push(...body.data);
+    page = body.meta?.next_page || null;
+  }
+  return rows;
+}
+
+async function loadLive() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  try {
+    const queries = [];
+    for (const collection of ['upcoming', 'past']) for (const tag of ['Longevity', 'Longevity Practice']) queries.push(liveQuery(collection, tag, controller.signal));
+    const list = (await Promise.all(queries)).flat().map(fromSola).filter(Boolean);
+    if (!list.length) throw new Error('No live events');
+    return list;
+  } finally { clearTimeout(timeout); }
+}
+
+async function loadSnapshot() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(SNAPSHOT_URL, { signal: controller.signal });
+    if (!response.ok) throw new Error('Activity data is unavailable');
+    return (await response.json()).events;
+  } finally { clearTimeout(timeout); }
+}
+
 async function load() {
   grid.setAttribute('aria-busy', 'true');
   buttons.forEach(b => b.disabled = true); search.disabled = true; topic.disabled = true;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-    let response;
-    try { response = await fetch('/longevity/assets/longevity-events.json?v=20261017b', { signal: controller.signal }); }
-    finally { clearTimeout(timeout); }
-    if (!response.ok) throw new Error('Activity data is unavailable');
-    const data = await response.json();
-    events = prepareEvents(data.events);
+    let rows;
+    try { rows = await loadLive(); } catch { rows = await loadSnapshot(); }
+    events = prepareEvents(rows);
     buttons.forEach(b => { b.disabled = false; b.addEventListener('click', () => { period = b.dataset.lPeriod; shown = pageSize; render(); }); });
     search.disabled = false; topic.disabled = false;
     search.addEventListener('input', () => { shown = pageSize; render(); });
