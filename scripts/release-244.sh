@@ -37,7 +37,7 @@ hash_payload() {
   local directory="$1"
   (
     cd "${directory}"
-    find 404.html favicon.ico index.html css images js -type f -exec shasum -a 256 {} + | sort
+    find 404.html favicon.ico index.html css images js longevity -type f -exec shasum -a 256 {} + | sort
   )
 }
 
@@ -109,7 +109,7 @@ plan_release() {
   plan="${release_state_dir}/${release_name}.plan"
   trap 'if [[ -n "${stage}" ]]; then rm -rf "${stage}"; fi' EXIT
 
-  rsync -a 404.html favicon.ico index.html css images js "${stage}/"
+  rsync -a 404.html favicon.ico index.html css images js longevity "${stage}/"
   if command -v xattr >/dev/null 2>&1; then
     xattr -cr "${stage}"
   fi
@@ -124,7 +124,7 @@ plan_release() {
   # COPYFILE_DISABLE keeps macOS tar from emitting AppleDouble members for the
   # xattrs it cannot strip; GNU tar ignores the variable, so this stays portable.
   COPYFILE_DISABLE=1 tar -C "${stage}" -czf "${artifact}" \
-    404.html favicon.ico index.html css images js RELEASE-MANIFEST.txt
+    404.html favicon.ico index.html css images js longevity RELEASE-MANIFEST.txt
   file_count="$(find "${stage}" -type f | wc -l | tr -d ' ')"
   verify_artifact "${artifact}" "${file_count}"
   artifact_sha="$(shasum -a 256 "${artifact}" | awk '{print $1}')"
@@ -149,8 +149,14 @@ plan_release() {
   remote_hashes="${release_state_dir}/${release_name}.remote-sha256"
   diff_file="${release_state_dir}/${release_name}.diff"
   hash_payload "${stage}" | grep -v 'RELEASE-MANIFEST.txt$' >"${local_hashes}"
-  ssh_244 "cd '${old_release}' && find 404.html favicon.ico index.html css images js -type f -exec sha256sum {} + | sort" \
-    >"${remote_hashes}"
+  # Older active releases do not yet contain the new Longevity directory.
+  ssh_244 bash -s -- "${old_release}" >"${remote_hashes}" <<'BASELINE'
+set -euo pipefail
+cd "$1"
+entries=(404.html favicon.ico index.html css images js)
+if [[ -d longevity ]]; then entries+=(longevity); fi
+find "${entries[@]}" -type f -exec sha256sum {} + | sort
+BASELINE
   diff -u "${remote_hashes}" "${local_hashes}" >"${diff_file}" || true
   [[ -s "${diff_file}" ]] || fail "production payload is unchanged; no release is needed"
 
@@ -178,7 +184,7 @@ plan_release() {
   printf 'Artifact SHA:    %s\n' "${artifact_sha}"
   printf 'Files:           %s\n' "${file_count}"
   printf 'Actions:         upload, verify, extract, atomic current switch, nginx test/reload\n'
-  printf 'Validation:      active target hash, Nginx, server HTTP, independent public HTTP/hash\n'
+  printf 'Validation:      active target hash, Nginx, all Longevity pages/assets from server and independent client\n'
   printf 'Rollback trigger:any failed post-switch validation\n'
   printf 'Rollback action: atomically restore the recorded old release and reload Nginx\n'
   printf 'Unaffected:      old releases, databases, other sites, GitHub and Gitea refs\n'
@@ -297,6 +303,18 @@ sudo -n /usr/bin/systemctl reload nginx.service
 [[ "$(sha256sum "${remote_base}/current/index.html" | awk '{print $1}')" == "${expected_index_sha}" ]]
 [[ "$(systemctl is-active nginx.service)" == "active" ]]
 curl -fsS --connect-timeout 5 --max-time 15 -o /dev/null https://4seas.xyz/
+# The legacy root must serve nested directories too. Verify every new page and
+# isolated asset, including the exact versioned URLs used by the browser.
+while IFS= read -r file; do
+  relative="${file#"${target}/"}"
+  path="${relative%index.html}"
+  if [[ "${relative}" == longevity/assets/* ]]; then
+    path="${relative}?v=20261017"
+  fi
+  expected="$(sha256sum "${file}" | awk '{print $1}')"
+  actual="$(curl -fsS --connect-timeout 5 --max-time 20 "https://4seas.xyz/${path}" | sha256sum | awk '{print $1}')"
+  [[ "${actual}" == "${expected}" ]]
+done < <(find "${target}/longevity" -type f | sort)
 trap - ERR
 REMOTE
 
@@ -304,6 +322,12 @@ REMOTE
   if ! curl -fsS --connect-timeout 5 --max-time 20 "${public_url}" >"${public_copy}" || \
      [[ "$(shasum -a 256 "${public_copy}" | awk '{print $1}')" != "${PLAN_INDEX_SHA}" ]]; then
     printf 'Independent public validation failed; rolling back.\n' >&2
+    rollback_remote "${PLAN_OLD_RELEASE}"
+    fail "release rolled back to ${PLAN_OLD_RELEASE}"
+  fi
+
+  if ! python3 "${script_dir}/validate-longevity.py" --root "${repo_root}" --base-url "${public_url}"; then
+    printf 'Independent Longevity validation failed; rolling back.\n' >&2
     rollback_remote "${PLAN_OLD_RELEASE}"
     fail "release rolled back to ${PLAN_OLD_RELEASE}"
   fi
