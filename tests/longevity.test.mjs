@@ -32,7 +32,7 @@ test('standalone pages resolve local dependencies, anchors and all three languag
         let file = join(root, url.pathname);
         if (url.pathname.endsWith('/')) file += 'index.html';
         assert(existsSync(file), `${path}: ${reference}`);
-        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), '20261017');
+        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), '20261017b');
       }
     }
     assert.match(html, /href="https:\/\/linktr\.ee\/ZuzaluLongevityChiangMai"/);
@@ -86,21 +86,23 @@ function context(lang='en', saved=null, {entry=false, denyStorage=false}={}) {
   return {ctx,ids,selectors,ready,values};
 }
 
-test('nested locale URLs preserve language preference, query and section without rewriting external profiles', () => {
+test('nested locale URLs preserve query and section; /longevity/ always stays English', () => {
   for(const lang of locales) {
     const c=context(lang); assert.equal(c.ctx.siteLang,lang);
     assert.equal(c.ctx.siteHref('https://sola.day/profile/jasonryer'),'https://sola.day/profile/jasonryer');
-    c.ready.forEach(fn=>fn());assert.equal(c.values.get('4seas-language'),lang);
+    c.ready.forEach(fn=>fn());assert.equal(c.values.has('4seas-language'),false);
   }
+  // A preference left over from an earlier version (or an earlier visit to
+  // /longevity/zh/) must not pull the default entry away from English.
   for(const saved of ['zh','th']) {
     const c=context('en',saved,{entry:true});c.ready.forEach(fn=>fn());
-    assert.equal(c.ctx.location.redirect,`/longevity/${saved}/?ref=community#data`);
+    assert.equal(c.ctx.location.redirect,undefined);assert.equal(c.ctx.siteLang,'en');
   }
   const blocked=context('th',null,{denyStorage:true});assert.doesNotThrow(()=>blocked.ready.forEach(fn=>fn()));
   const c=context('zh');const link=new Element('a');link.href='https://4seas.xyz/longevity/en/';link.dataset.language='en';
   c.selectors.set('[data-language]',[link]);c.ready.forEach(fn=>fn());
   assert.equal(link.href,'/longevity/en/?ref=community#data');
-  link.href='https://4seas.xyz'+link.href;link.fire('click');assert.equal(c.values.get('4seas-language'),'en');
+  link.href='https://4seas.xyz'+link.href;link.fire('click');assert.equal(c.values.has('4seas-language'),false);
 });
 
 test('EN/TH calendar loads its shipped data, pages, searches and handles network failure', async () => {
@@ -113,7 +115,7 @@ test('EN/TH calendar loads its shipped data, pages, searches and handles network
     const periods=['upcoming','past'].map(p=>{const e=new Element('button');e.dataset.lPeriod=p;return e;});
     c.selectors.set('[data-l-period]',periods);c.ctx.prepareEvents=prepareEvents;c.ctx.selectEvents=selectEvents;
     c.ctx.Date=class extends Date {static now(){return Date.parse('2026-10-17T12:00:00+07:00');}};
-    c.ctx.fetch=async url=>{assert.equal(url,'/longevity/assets/longevity-events.json?v=20261017');if(unavailable)throw Error('offline');return{ok:true,json:async()=>data};};
+    c.ctx.fetch=async url=>{assert.equal(url,'/longevity/assets/longevity-events.json?v=20261017b');if(unavailable)throw Error('offline');return{ok:true,json:async()=>data};};
     vm.runInContext(source,c.ctx);await settle();
     const status=c.ids.get('l-event-status');assert(!/[\u4e00-\u9fff]/.test(status.textContent),status.textContent);
     if(unavailable){assert.equal(c.ids.get('l-more').hidden,true);continue;}

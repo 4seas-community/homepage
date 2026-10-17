@@ -311,7 +311,8 @@ Do not compare the full numeric mode to the literal string `755`. Compare the la
 The allowlisted `longevity/` directory contains the standalone English, Chinese
 and Thai pages and their isolated assets. `/longevity/` renders English without
 JavaScript; explicit locale paths are `/longevity/en/`, `/longevity/zh/` and
-`/longevity/th/`. Saved language preference may redirect the default entry.
+`/longevity/th/`. The default entry always stays English; no saved preference
+redirects it.
 
 `release-244.sh` includes the directory in staging, packaging and hash comparison.
 Its baseline reader permits the previous release to lack this new directory.

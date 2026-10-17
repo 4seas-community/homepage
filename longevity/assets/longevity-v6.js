@@ -1,4 +1,4 @@
-import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017';
+import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017b';
 const t = value => window.siteT ? window.siteT(value) : value;
 
 const grid = document.getElementById('l-event-grid');
@@ -68,7 +68,7 @@ async function load() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     let response;
-    try { response = await fetch('/longevity/assets/longevity-events.json?v=20261017', { signal: controller.signal }); }
+    try { response = await fetch('/longevity/assets/longevity-events.json?v=20261017b', { signal: controller.signal }); }
     finally { clearTimeout(timeout); }
     if (!response.ok) throw new Error('Activity data is unavailable');
     const data = await response.json();
