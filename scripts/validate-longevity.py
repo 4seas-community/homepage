@@ -11,7 +11,7 @@ def public_path(relative):
     path = relative.as_posix()
     if path.endswith('index.html'):
         return path[:-len('index.html')]
-    return path + '?v=20261017b'
+    return path + '?v=20261017c'
 
 
 def validate(root, base_url):

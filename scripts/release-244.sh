@@ -309,7 +309,7 @@ while IFS= read -r file; do
   relative="${file#"${target}/"}"
   path="${relative%index.html}"
   if [[ "${relative}" == longevity/assets/* ]]; then
-    path="${relative}?v=20261017b"
+    path="${relative}?v=20261017c"
   fi
   expected="$(sha256sum "${file}" | awk '{print $1}')"
   actual="$(curl -fsS --connect-timeout 5 --max-time 20 "https://4seas.xyz/${path}" | sha256sum | awk '{print $1}')"
