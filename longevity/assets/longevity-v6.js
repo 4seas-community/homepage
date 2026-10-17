@@ -1,4 +1,4 @@
-import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017c';
+import { prepareEvents, selectEvents } from './longevity-calendar-data.js?v=20261017d';
 const t = value => window.siteT ? window.siteT(value) : value;
 
 const grid = document.getElementById('l-event-grid');
@@ -62,7 +62,6 @@ function render(focusAt = null) {
 }
 
 const SOLA_API = 'https://api.sola.day/api/v1/events';
-const SNAPSHOT_URL = '/longevity/assets/longevity-events.json?v=20261017c';
 
 function fromSola(row) {
   if (!row || row.status !== 'published' || row.visibility === 'private') return null;
@@ -97,18 +96,7 @@ async function loadLive() {
     const queries = [];
     for (const collection of ['upcoming', 'past']) for (const tag of ['Longevity', 'Longevity Practice']) queries.push(liveQuery(collection, tag, controller.signal));
     const list = (await Promise.all(queries)).flat().map(fromSola).filter(Boolean);
-    if (!list.length) throw new Error('No live events');
     return list;
-  } finally { clearTimeout(timeout); }
-}
-
-async function loadSnapshot() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
-  try {
-    const response = await fetch(SNAPSHOT_URL, { signal: controller.signal });
-    if (!response.ok) throw new Error('Activity data is unavailable');
-    return (await response.json()).events;
   } finally { clearTimeout(timeout); }
 }
 
@@ -116,9 +104,9 @@ async function load() {
   grid.setAttribute('aria-busy', 'true');
   buttons.forEach(b => b.disabled = true); search.disabled = true; topic.disabled = true;
   try {
-    let rows;
-    try { rows = await loadLive(); } catch { rows = await loadSnapshot(); }
-    events = prepareEvents(rows);
+    // Live data only: a stale copy would show past events as upcoming, so a
+    // failed load is reported as a failure instead of being papered over.
+    events = prepareEvents(await loadLive());
     buttons.forEach(b => { b.disabled = false; b.addEventListener('click', () => { period = b.dataset.lPeriod; shown = pageSize; render(); }); });
     search.disabled = false; topic.disabled = false;
     search.addEventListener('input', () => { shown = pageSize; render(); });
@@ -128,7 +116,8 @@ async function load() {
     // Keep status correct while the page remains open, including an event in progress.
     setInterval(render, 60000);
   } catch {
-    status.textContent = t('完整列表暂时未能载入。下方保留生成页面时的活动；请查看实时日历获取最新安排。');
+    grid.replaceChildren(element('p', 'empty-state', '活动暂时无法从 Sola 载入。请稍后刷新页面，或查看实时日历。'));
+    status.textContent = t('活动暂时无法从 Sola 载入。请稍后刷新页面，或查看实时日历。');
     more.hidden = true;
   } finally { grid.removeAttribute('aria-busy'); }
 }
