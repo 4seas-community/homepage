@@ -113,7 +113,7 @@ Create an isolated temporary directory. Never archive the repository root direct
 
 ```bash
 FOURSEAS_STAGE_DIR="$(mktemp -d /tmp/4seas-home-stage.XXXXXX)"
-rsync -a 404.html favicon.ico index.html css images js "${FOURSEAS_STAGE_DIR}/"
+rsync -a 404.html favicon.ico index.html css images js longevity "${FOURSEAS_STAGE_DIR}/"
 ```
 
 On macOS, remove extended attributes from the temporary copy only:
@@ -148,7 +148,7 @@ Package explicit top-level entries. Do not archive `.`: a `mktemp` directory is 
 ```bash
 FOURSEAS_ARTIFACT="/tmp/4seas-home-<UTC>-<revision>.tar.gz"
 tar -C "${FOURSEAS_STAGE_DIR}" -czf "${FOURSEAS_ARTIFACT}" \
-  404.html favicon.ico index.html css images js RELEASE-MANIFEST.txt
+  404.html favicon.ico index.html css images js longevity RELEASE-MANIFEST.txt
 ```
 
 Verify that the archive has no absolute path, `..` component, or root `./` metadata entry. Record:
@@ -305,3 +305,20 @@ Check response headers and compare content hashes. `cf-cache-status: HIT`, a non
 ### Validation logic rejects `2755`
 
 Do not compare the full numeric mode to the literal string `755`. Compare the last three effective access digits. The setgid bit is intentional on this server.
+
+## Longevity release
+
+The allowlisted `longevity/` directory contains the standalone English, Chinese
+and Thai pages and their isolated assets. `/longevity/` renders English without
+JavaScript; explicit locale paths are `/longevity/en/`, `/longevity/zh/` and
+`/longevity/th/`. Saved language preference may redirect the default entry.
+
+`release-244.sh` includes the directory in staging, packaging and hash comparison.
+Its baseline reader permits the previous release to lack this new directory.
+After switching, it compares every new page and local asset with its public
+response from the server, then repeats those comparisons from the operator's
+computer with `scripts/validate-longevity.py`. Failure triggers the recorded
+rollback. Read [LONGEVITY-RELEASE.md](LONGEVITY-RELEASE.md) for the release-specific
+checks, review limits and cache handling. No Nginx configuration changes are
+authorized by this PR. If the existing legacy route cannot serve nested paths,
+stop and obtain a separately reviewed routing change.
