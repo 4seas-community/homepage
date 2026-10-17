@@ -28,24 +28,14 @@ const SITE_CATALOG = {"跳到主要内容":["Skip to main content","ข้าม
       document.addEventListener('click', event => { if (!picker.contains(event.target)) picker.removeAttribute('open'); });
       picker.addEventListener('keydown', event => { if (event.key === 'Escape') { picker.removeAttribute('open'); picker.querySelector('summary')?.focus(); } });
     }
-    const explicit = /^\/longevity\/(en|zh|th)(?:\/|$)/.test(location.pathname);
-    try {
-      if (explicit) localStorage.setItem('4seas-language', locale);
-      else {
-        const saved = localStorage.getItem('4seas-language');
-        if (saved === 'zh' || saved === 'th') {
-          location.replace('/longevity/' + saved + '/' + location.search + location.hash);
-          return;
-        }
-      }
-    } catch { /* Reading and navigation remain available when storage is disabled. */ }
+    // /longevity/ is always English. The language follows the URL only: no
+    // remembered preference may redirect the default entry to another locale.
     document.querySelectorAll('[data-language]').forEach(link => {
       const url = new URL(link.href);
       url.search = location.search;
       url.hash = location.hash;
       link.href = url.pathname + url.search + url.hash;
       link.addEventListener('click', () => {
-        try { localStorage.setItem('4seas-language', link.dataset.language); } catch {}
         const target = new URL(link.href);
         const section = [...document.querySelectorAll('main section[id]')].reverse().find(el => el.getBoundingClientRect().top <= 160);
         if (section) target.hash = section.id;
