@@ -33,17 +33,17 @@ test("homepage event gallery link stays on 4Seas properties", async () => {
   assert.doesNotMatch(source, /href="https:\/\/app\.sola\.day\/event\/4seas"/)
 })
 
-test("homepage keeps Longevity first and adds ETHChiangmai second", async () => {
+test("homepage keeps Longevity first, ETHChiangmai second, and Xenoria City third", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
   const styles = await readFile(new URL("../css/4seas-631dbf.webflow.css", import.meta.url), "utf8")
   const bannerStart = source.indexOf('<div class="swiper-wrapper banner_slider_wrapper">')
   const bannerEnd = source.indexOf('<div class="code_hide w-embed w-script">', bannerStart)
   const banner = source.slice(bannerStart, bannerEnd)
-  const poster = await readFile(new URL("../images/zuzalu-longevity-month-2026.png", import.meta.url))
+  const poster = await readFile(new URL("../images/zuzalu-longevity-month-2026-20261022.png", import.meta.url))
 
-  assert.match(source, /<div class="swiper-slide banner_slider_item">\s*<div class="div-block-33 longevity-banner-frame">\s*<img src="images\/zuzalu-longevity-month-2026\.png" alt="Zuzalu Longevity Month 2026" class="image-13 longevity-banner-image"/)
-  assert.equal((source.match(/class="swiper-slide banner_slider_item"/g) || []).length, 2)
-  assert.ok(banner.indexOf('zuzalu-longevity-month-2026.png') < banner.indexOf('ethchiangmai-2026-'))
+  assert.match(source, /<div class="swiper-slide banner_slider_item">\s*<div class="div-block-33 longevity-banner-frame">\s*<img src="images\/zuzalu-longevity-month-2026-20261022\.png" alt="Zuzalu Longevity Month 2026[^"\n]*" class="image-13 longevity-banner-image"/)
+  assert.equal((source.match(/class="swiper-slide banner_slider_item"/g) || []).length, 3)
+  assert.ok(banner.indexOf('zuzalu-longevity-month-2026-20261022.png') < banner.indexOf('ethchiangmai-2026-'))
   assert.match(source, /src="js\/banner-slider\.js\?v=20260906-ethchiangmai"/)
   const slider = await readFile(new URL('../js/banner-slider.js', import.meta.url), 'utf8')
   assert.match(slider, /initialSlide: 0/)
@@ -95,11 +95,11 @@ test("ETHChiangmai poster ships valid responsive WebP variants", async () => {
   const widths = [1350, 2700, 5400]
   const heights = [375, 750, 1500]
 
-  assert.match(source, /srcset="images\/ethchiangmai-2026-1350x375\.webp 1350w, images\/ethchiangmai-2026-2700x750\.webp 2700w, images\/ethchiangmai-2026-5400x1500\.webp 5400w"/)
+  assert.match(source, /srcset="images\/ethchiangmai-2026-1350x375-20261022\.webp 1350w, images\/ethchiangmai-2026-2700x750-20261022\.webp 2700w, images\/ethchiangmai-2026-5400x1500-20261022\.webp 5400w"/)
   assert.match(source, /sizes="100vw"/)
 
   for (const [index, width] of widths.entries()) {
-    const name = `ethchiangmai-2026-${width}x${heights[index]}.webp`
+    const name = `ethchiangmai-2026-${width}x${heights[index]}-20261022.webp`
     const bytes = await readFile(new URL(`../images/${name}`, import.meta.url))
     // RIFF....WEBP magic bytes, mirroring the PNG signature check above.
     assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF", `${name} is not a RIFF container`)
