@@ -2678,6 +2678,11 @@
   }
 }
 
+.section-2 .longevity-banner-frame > a {
+  display: block;
+  cursor: pointer;
+}
+
 .section-2 .longevity-banner-image {
   display: block;
   width: 100%;
