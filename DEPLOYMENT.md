@@ -327,3 +327,16 @@ rollback. Read [LONGEVITY-RELEASE.md](LONGEVITY-RELEASE.md) for the release-spec
 checks, review limits and cache handling. No Nginx configuration changes are
 authorized by this PR. If the existing legacy route cannot serve nested paths,
 stop and obtain a separately reviewed routing change.
+
+
+## Coliving community introduction
+
+`coliving-community/` is an allowlisted standalone page with isolated assets and
+English, Chinese and Thai routes. The existing `/coliving/` application and
+`/coliving/en/start` submission route remain separate. The root homepage adds
+only a Coliving link immediately after Longevity. See [COLIVING-RELEASE.md](COLIVING-RELEASE.md).
+
+The operator script includes this directory in staging, archive, baseline diff
+and server verification. Independent verification runs
+`scripts/validate-coliving.py`; any failure uses the recorded rollback release.
+PR creation and merge do not authorize a deployment.
