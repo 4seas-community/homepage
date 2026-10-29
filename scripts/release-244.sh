@@ -37,7 +37,7 @@ hash_payload() {
   local directory="$1"
   (
     cd "${directory}"
-    find 404.html favicon.ico index.html css images js longevity -type f -exec shasum -a 256 {} + | sort
+    find 404.html favicon.ico index.html css images js longevity coliving-community -type f -exec shasum -a 256 {} + | sort
   )
 }
 
@@ -109,7 +109,7 @@ plan_release() {
   plan="${release_state_dir}/${release_name}.plan"
   trap 'if [[ -n "${stage}" ]]; then rm -rf "${stage}"; fi' EXIT
 
-  rsync -a 404.html favicon.ico index.html css images js longevity "${stage}/"
+  rsync -a 404.html favicon.ico index.html css images js longevity coliving-community "${stage}/"
   if command -v xattr >/dev/null 2>&1; then
     xattr -cr "${stage}"
   fi
@@ -124,7 +124,7 @@ plan_release() {
   # COPYFILE_DISABLE keeps macOS tar from emitting AppleDouble members for the
   # xattrs it cannot strip; GNU tar ignores the variable, so this stays portable.
   COPYFILE_DISABLE=1 tar -C "${stage}" -czf "${artifact}" \
-    404.html favicon.ico index.html css images js longevity RELEASE-MANIFEST.txt
+    404.html favicon.ico index.html css images js longevity coliving-community RELEASE-MANIFEST.txt
   file_count="$(find "${stage}" -type f | wc -l | tr -d ' ')"
   verify_artifact "${artifact}" "${file_count}"
   artifact_sha="$(shasum -a 256 "${artifact}" | awk '{print $1}')"
@@ -155,6 +155,7 @@ set -euo pipefail
 cd "$1"
 entries=(404.html favicon.ico index.html css images js)
 if [[ -d longevity ]]; then entries+=(longevity); fi
+if [[ -d coliving-community ]]; then entries+=(coliving-community); fi
 find "${entries[@]}" -type f -exec sha256sum {} + | sort
 BASELINE
   diff -u "${remote_hashes}" "${local_hashes}" >"${diff_file}" || true
@@ -310,11 +311,13 @@ while IFS= read -r file; do
   path="${relative%index.html}"
   if [[ "${relative}" == longevity/assets/* ]]; then
     path="${relative}?v=20261017d"
+  elif [[ "${relative}" == coliving-community/assets/* ]]; then
+    path="${relative}?v=20261029"
   fi
   expected="$(sha256sum "${file}" | awk '{print $1}')"
   actual="$(curl -fsS --connect-timeout 5 --max-time 20 "https://4seas.xyz/${path}" | sha256sum | awk '{print $1}')"
   [[ "${actual}" == "${expected}" ]]
-done < <(find "${target}/longevity" -type f | sort)
+done < <(find "${target}/longevity" "${target}/coliving-community" -type f | sort)
 trap - ERR
 REMOTE
 
@@ -328,6 +331,12 @@ REMOTE
 
   if ! python3 "${script_dir}/validate-longevity.py" --root "${repo_root}" --base-url "${public_url}"; then
     printf 'Independent Longevity validation failed; rolling back.\n' >&2
+    rollback_remote "${PLAN_OLD_RELEASE}"
+    fail "release rolled back to ${PLAN_OLD_RELEASE}"
+  fi
+
+  if ! python3 "${script_dir}/validate-coliving.py" --root "${repo_root}" --base-url "${public_url}"; then
+    printf 'Independent Coliving validation failed; rolling back.\n' >&2
     rollback_remote "${PLAN_OLD_RELEASE}"
     fail "release rolled back to ${PLAN_OLD_RELEASE}"
   fi

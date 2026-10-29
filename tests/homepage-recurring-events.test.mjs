@@ -137,12 +137,14 @@ test("homepage removes the two old event ads but keeps the organizer action", as
   assert.doesNotMatch(source, /tk4seas/)
 })
 
-// Coliving is hidden while the hotel license is pending; no public page may
-// link to it or advertise it until it is reinstated.
-test("homepage and 404 page do not mention or link to coliving", async () => {
+// The standalone introduction is reinstated through one navigation link only.
+test("homepage only adds the approved Coliving navigation entry", async () => {
   for (const file of ["../index.html", "../404.html", "../js/site-not-found.js"]) {
     const source = await readFile(new URL(file, import.meta.url), "utf8")
-    assert.doesNotMatch(source, /co-?living|共享居住|โคลิฟวิ่ง/i, file)
+    const withoutNavigation = file === "../index.html"
+      ? source.replace(/<a href="\/coliving-community\/" class="fn-navbar-link-box w-nav-link">Coliving<\/a>/, "")
+      : source
+    assert.doesNotMatch(withoutNavigation, /co-?living|共享居住|โคลิฟวิ่ง/i, file)
   }
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8")
   assert.doesNotMatch(source, />Tribes<\/a>/)
