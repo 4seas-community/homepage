@@ -17,6 +17,8 @@ test('Coliving is standalone, localized, and keeps every dependency inside the p
     assert.equal((html.match(/href="https:\/\/4seas.xyz\/coliving\/en\/start"/g) || []).length, 7);
     assert.equal((html.match(/href="https:\/\/linktr.ee\/4seascoliving"/g) || []).length, 2);
     assert.doesNotMatch(html, /localhost|127\.0\.0\.1|\/(?:en|zh|th)\/[^" ]*\.html|canteen\.html|src="\/main.js/);
+    assert(html.indexOf('id="package"') < html.indexOf('id="nourish"'));
+    assert.equal((html.match(/id="package"/g) || []).length, 1);
     assert.match(html, /Questions That Matter/);
     assert.match(html, /Move Freely/);
     assert.match(html, /Move Strong/);
@@ -27,7 +29,7 @@ test('Coliving is standalone, localized, and keeps every dependency inside the p
         const url = new URL(ref, 'https://4seas.xyz');
         const file = url.pathname.slice(1) + (url.pathname.endsWith('/') ? 'index.html' : '');
         assert(existsSync(new URL(file, root)), `${locale}: ${ref}`);
-        if (/\.(css|js)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), '20261029');
+        if (/\.(css|js)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), url.pathname.endsWith('/coliving-v46.css') ? '20261102' : '20261029');
       }
     }
   }
