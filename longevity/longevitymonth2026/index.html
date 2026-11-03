@@ -4,13 +4,61 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Longevity Month 2026</title>
-  <link rel="canonical" href="https://4seas.xyz/coliving/en/longevity/longevitymonth2026">
-  <script>
-    location.replace("https://4seas.xyz/coliving/en/longevity/longevitymonth2026" + location.search + location.hash);
-  </script>
-  <meta http-equiv="refresh" content="0; url=https://4seas.xyz/coliving/en/longevity/longevitymonth2026">
+  <link rel="canonical" href="https://4seas.xyz/longevity/longevitymonth2026/">
+  <style>
+    html, body { margin: 0; height: 100%; background: #fffefa; overflow: hidden; }
+    iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fffefa; }
+  </style>
 </head>
 <body>
-  <p><a href="https://4seas.xyz/coliving/en/longevity/longevitymonth2026">Longevity Month 2026</a></p>
+  <!-- This address stays in the browser. Do not send the top window to another URL. -->
+  <iframe id="month" title="Longevity Month 2026"
+    src="https://4seas.xyz/coliving/en/longevity/longevitymonth2026"></iframe>
+  <script>
+    var page = "https://4seas.xyz/coliving/en/longevity/longevitymonth2026";
+    var frame = document.getElementById("month");
+    var extra = location.search + location.hash;
+    if (extra) frame.src = page + extra;
+
+    frame.addEventListener("load", function () {
+      var doc;
+      try { doc = frame.contentDocument; } catch (e) { return; }
+      if (!doc || doc.documentElement.dataset.monthStay === "1") return;
+      doc.documentElement.dataset.monthStay = "1";
+      var base = frame.contentWindow.location.href;
+
+      function outside(href) {
+        try {
+          var url = new URL(href, base);
+          return url.origin !== "https://4seas.xyz" || url.pathname.indexOf("/longevity/longevitymonth2026") === -1;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function leaveForPeer(form) {
+        if (!form || !form.getAttribute) return;
+        var action = form.getAttribute("action") || "";
+        var method = form.querySelector('input[name="method"]');
+        if (action.indexOf("/pay/start") !== -1 && method && method.value === "peer") {
+          form.setAttribute("target", "_top");
+        }
+      }
+
+      doc.addEventListener("click", function (event) {
+        var node = event.target && event.target.nodeType === 1 ? event.target : event.target && event.target.parentElement;
+        if (!node || !node.closest) return;
+        var link = node.closest("a[href]");
+        if (link && link.getAttribute("target") !== "_blank" && outside(link.getAttribute("href"))) {
+          link.setAttribute("target", "_top");
+        }
+        leaveForPeer(node.closest("form"));
+      }, true);
+
+      doc.addEventListener("submit", function (event) {
+        leaveForPeer(event.target);
+      }, true);
+    });
+  </script>
 </body>
 </html>
