@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { renderNotFound, notFoundLanguage, NOT_FOUND_COPY, NOT_FOUND_DESTINATIONS } from '../site-chrome/index.js';
+import { renderNotFound, notFoundLanguage, NOT_FOUND_COPY, NOT_FOUND_DESTINATIONS, queryLanguage } from '../site-chrome/index.js';
 import { mountNotFound } from '../site-chrome/not-found-interaction.js';
 
 test('404 language uses the route locale, never an incidental later segment', () => {
@@ -26,17 +26,18 @@ test('all three 404 pages share destinations and have one main, heading and no e
     assert.doesNotMatch(html, /booking\.4seas|File not found|Error response|onClick=/);
   }
 });
-test('static 404 selects Chinese at the screenshot URL and switches copy without navigating', () => {
-  const buttons=['zh','en','th'].map(code=>({dataset:{errorLanguage:code},attrs:{},events:{},setAttribute(k,v){this.attrs[k]=v;},addEventListener(k,f){this.events[k]=f;}}));
+test('static 404 takes language from the one Header selector and keeps route fallback', () => {
   const title={dataset:{errorCopy:'title'}},route={dataset:{errorRoute:'4'}};
-  const section={setAttribute(){}},languages={setAttribute(){}};
-  const doc={defaultView:{location:{pathname:'/longevity/zh/longevitymonth2026'}}};
-  const root={ownerDocument:doc,querySelectorAll:q=>q==='[data-error-language]'?buttons:q==='[data-error-copy]'?[title]:[route],querySelector:q=>q==='.errorRoutes'?section:languages};
-  mountNotFound(root,NOT_FOUND_COPY,notFoundLanguage);
+  const section={setAttribute(){}};
+  const doc={defaultView:{location:{pathname:'/longevity/zh/longevitymonth2026',search:''}}};
+  const root={ownerDocument:doc,querySelectorAll:q=>q==='[data-error-copy]'?[title]:[route],querySelector:()=>section};
+  mountNotFound(root,NOT_FOUND_COPY,notFoundLanguage,queryLanguage);
   assert.equal(root.lang,'zh-CN');assert.equal(title.textContent,NOT_FOUND_COPY.zh.title);
-  assert.equal(buttons[0].attrs['aria-pressed'],'true');
-  buttons[2].events.click();assert.equal(root.lang,'th');assert.equal(title.textContent,NOT_FOUND_COPY.th.title);
-  assert.equal(route.textContent,NOT_FOUND_COPY.th.routes[4]);assert.equal(buttons[0].attrs['aria-pressed'],'false');
+  doc.defaultView.location.search='?lang=th';
+  mountNotFound(root,NOT_FOUND_COPY,notFoundLanguage,queryLanguage);
+  assert.equal(root.lang,'th');assert.equal(title.textContent,NOT_FOUND_COPY.th.title);
+  assert.equal(route.textContent,NOT_FOUND_COPY.th.routes[4]);
+  assert.doesNotMatch(renderNotFound(), /errorLanguages|data-error-language/);
 });
 test('local preview serves branded HTML with actual 404 status, including HEAD and nested paths', async () => {
   const server=spawn('python3',['scripts/preview.py','--port','0'],{cwd:new URL('../',import.meta.url),stdio:['ignore','pipe','pipe']});

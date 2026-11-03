@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { renderHeader, renderFooter, renderNotFound, NOT_FOUND_COPY, notFoundLanguage, VERSION } from '../site-chrome/index.js';
+import { renderHeader, renderFooter, renderNotFound, NOT_FOUND_COPY, notFoundLanguage, queryLanguage, queryLanguages, LANGUAGES, VERSION } from '../site-chrome/index.js';
+import { COPY } from '../site-chrome/config.js';
 const root = new URL('../', import.meta.url);
 const check = process.argv.includes('--check');
 let stale = false;
@@ -44,9 +45,12 @@ for (const path of pages) {
   await output(path, html);
 }
 await output('css/site-chrome.css', await readFile(new URL('site-chrome/style.css', root)));
+const languageInteraction = await readFile(new URL('site-chrome/language.js', root), 'utf8');
+const queryMount = languageInteraction.slice(languageInteraction.indexOf('export function mountQueryLanguage')).replace('export function', 'function');
+const helpers = `const COPY = ${JSON.stringify(COPY)};\nconst LANGUAGES = ${JSON.stringify(LANGUAGES)};\nconst queryLanguage = ${queryLanguage.toString()};\nconst queryLanguages = ${queryLanguages.toString()};\nconst notFoundLanguage = ${notFoundLanguage.toString()};\n`;
 const interaction = await readFile(new URL('site-chrome/interaction.js', root), 'utf8');
-await output('js/site-chrome.js', `// Generated from @4seas/site-chrome ${VERSION}. Do not edit.\n(() => {\n${interaction.replace('export function mountHeader', 'function mountHeader')}\n document.querySelectorAll('.fs-header').forEach(mountHeader);\n})();\n`);
+await output('js/site-chrome.js', `// Generated from @4seas/site-chrome ${VERSION}. Do not edit.\n(() => {\n${helpers}${queryMount}\n${interaction.replace('export function mountHeader', 'function mountHeader')}\n document.querySelectorAll('.fs-header').forEach(root => { mountQueryLanguage(root, { COPY, queryLanguage, queryLanguages, notFoundLanguage }); mountHeader(root); });\n})();\n`);
 await output('images/site-chrome/logo.png', await readFile(new URL('site-chrome/assets/logo.png', root)));
 const notFoundInteraction = await readFile(new URL('site-chrome/not-found-interaction.js', root), 'utf8');
-await output('js/site-not-found.js', `// Generated from @4seas/site-chrome ${VERSION}. Do not edit.\n(() => {\nconst copy = ${JSON.stringify(NOT_FOUND_COPY)};\nconst detectLanguage = ${notFoundLanguage.toString()};\n${notFoundInteraction.replace('export function mountNotFound', 'function mountNotFound')}\ndocument.querySelectorAll('.fs-not-found').forEach(root => mountNotFound(root, copy, detectLanguage));\n})();\n`);
+await output('js/site-not-found.js', `// Generated from @4seas/site-chrome ${VERSION}. Do not edit.\n(() => {\nconst copy = ${JSON.stringify(NOT_FOUND_COPY)};\nconst queryLanguage = ${queryLanguage.toString()};\nconst detectLanguage = ${notFoundLanguage.toString()};\n${notFoundInteraction.replace('export function mountNotFound', 'function mountNotFound')}\ndocument.querySelectorAll('.fs-not-found').forEach(root => mountNotFound(root, copy, detectLanguage, queryLanguage));\n})();\n`);
 if (stale) process.exitCode = 1;

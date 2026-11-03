@@ -29,7 +29,7 @@ test('Coliving is standalone, localized, and keeps every dependency inside the p
         const url = new URL(ref, 'https://4seas.xyz');
         const file = url.pathname.slice(1) + (url.pathname.endsWith('/') ? 'index.html' : '');
         assert(existsSync(new URL(file, root)), `${locale}: ${ref}`);
-        if (/\.(css|js)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), url.pathname.includes('site-chrome') ? '1.1.0' : url.pathname.endsWith('/coliving-v46.css') ? '20261103' : '20261029');
+        if (/\.(css|js)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), url.pathname.includes('site-chrome') ? '1.2.0' : url.pathname.endsWith('/coliving-v46.css') ? '20261103' : '20261029');
       }
     }
   }

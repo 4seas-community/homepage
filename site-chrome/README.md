@@ -80,3 +80,13 @@ files. A plain `python -m http.server` instead shows Python's built-in error pag
 
 When changing published styles/scripts, bump the package version and `VERSION`
 in `config.js` before generation, so all static asset URLs invalidate caches.
+
+## Language-selector contract
+
+The public Header always renders exactly one language selector. Apps supply
+localized native links, including their deployment prefix and current query.
+Pages without translated routes use a `lang` query choice for public chrome;
+their existing page content is not presented as newly translated. The static
+404 uses that same selector to translate the error body and Header together;
+it has no separate body language bar. Omitted/empty language options fall back
+to the shared query adapter instead of silently hiding the control.

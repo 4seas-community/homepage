@@ -1,6 +1,6 @@
 'use client';
 import { createElement, Fragment, useEffect, useId, useRef, useState } from 'react';
-import { headerTree, footerTree, notFoundTree, notFoundLanguage, NOT_FOUND_COPY, languageCode } from './index.js';
+import { headerTree, footerTree, notFoundTree, notFoundLanguage, NOT_FOUND_COPY, languageCode, queryLanguage, queryLanguages } from './index.js';
 import { mountHeader } from './interaction.js';
 
 function render(tree, extra, rootRef) {
@@ -13,17 +13,28 @@ function render(tree, extra, rootRef) {
 export function Header(props) {
   const ref = useRef(null);
   const id = useId();
+  const [query, setQuery] = useState(null);
+  const queryMode = !props.languages?.length;
+  useEffect(() => {
+    if (!queryMode) return;
+    const { pathname, search, hash } = window.location;
+    setQuery({ locale: queryLanguage(search, notFoundLanguage(pathname)), languages: queryLanguages(pathname, search, hash) });
+  }, [queryMode]);
   useEffect(() => mountHeader(ref.current), []);
-  return render(headerTree({ ...props, id: `fs-nav-${id.replaceAll(':', '')}` }), null, ref);
+  return render(headerTree({ ...props, ...(queryMode && query ? query : {}), id: `fs-nav-${id.replaceAll(':', '')}` }), null, ref);
 }
 export function Footer({ children, ...props }) {
-  return render(footerTree(props), children);
+  const [locale, setLocale] = useState(props.locale);
+  useEffect(() => {
+    if (!props.locale) setLocale(queryLanguage(window.location.search, notFoundLanguage(window.location.pathname)));
+  }, [props.locale]);
+  return render(footerTree({ ...props, locale }), children);
 }
 export function NotFound({ locale, pathname = '', basePath }) {
   const initial = locale || notFoundLanguage(pathname, basePath);
-  const [selection, setSelection] = useState(null);
-  useEffect(() => setSelection(null), [initial, pathname]);
-  const language = languageCode(selection || initial);
+  const [selection, setSelection] = useState(initial);
+  useEffect(() => setSelection(queryLanguage(window.location.search, initial)), [initial, pathname]);
+  const language = languageCode(selection);
   useEffect(() => { document.title = NOT_FOUND_COPY[language].title + ' | 4Seas'; }, [language]);
-  return render(notFoundTree({ locale: language, onLanguage: setSelection }));
+  return render(notFoundTree({ locale: language }));
 }

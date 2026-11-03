@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { navigation, renderHeader, renderFooter, QUOTE } from '../site-chrome/index.js';
+import { navigation, renderHeader, renderFooter, QUOTE, queryLanguage, queryLanguages } from '../site-chrome/index.js';
 import { mountHeader } from '../site-chrome/interaction.js';
 
 test('every public menu sends Coliving to the introduction directly after Longevity', () => {
@@ -47,10 +47,29 @@ test('shared interaction closes on Escape, outside clicks and desktop resize and
 });
 test('checked-in static pages, styles, script and logo are generated from the same package', () => {
   execFileSync(process.execPath, ['scripts/generate-site-chrome.mjs', '--check'], { cwd: new URL('../', import.meta.url), stdio: 'pipe' });
-  for (const file of ['index.html','404.html','longevity/en/index.html','coliving-community/zh/index.html']) {
+  for (const file of ['index.html','404.html', ...['longevity','coliving-community'].flatMap(base => ['', 'en/', 'zh/', 'th/'].map(locale => `${base}/${locale}index.html`))]) {
     const html=readFileSync(new URL('../'+file,import.meta.url),'utf8');
     assert.equal((html.match(/class="fs-header"/g)||[]).length,1,file);
     assert.equal((html.match(/class="fs-footer"/g)||[]).length,1,file);
+    assert.match(html, /class="fs-language"/,file);
+    assert.equal((html.match(/data-language=/g)||[]).length,3,file);
+    assert.doesNotMatch(html, /errorLanguages/,file);
     assert.doesNotMatch(html, /w-nav-menu|class="wrap site-brand-header"/);
   }
+});
+
+test('omitted language options never hide the shared Header language selector', () => {
+  for (const options of [{}, { languages: [] }, { locale: 'zh' }]) {
+    const html = renderHeader(options);
+    assert.match(html, /class="fs-language"/);
+    assert.equal((html.match(/data-language=/g)||[]).length,3);
+    assert.match(html, /data-query-language/);
+  }
+});
+test('query language preserves the missing path, existing parameters and fragment', () => {
+  const options = queryLanguages('/longevity/zh/missing', '?t=keep&from=mail', '#details');
+  const thai = options.find(item => item.code === 'th');
+  assert.equal(thai.href, '/longevity/zh/missing?t=keep&from=mail&lang=th#details');
+  assert.equal(queryLanguage('?lang=th', 'zh'), 'th');
+  assert.equal(queryLanguage('?lang=invalid', 'zh'), 'zh');
 });

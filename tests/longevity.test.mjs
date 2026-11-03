@@ -40,7 +40,7 @@ test('standalone pages resolve local dependencies, anchors and all three languag
         let file = join(root, url.pathname);
         if (url.pathname.endsWith('/')) file += 'index.html';
         assert(existsSync(file), `${path}: ${reference}`);
-        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), url.pathname.includes('site-chrome') ? '1.1.0' : '20261017d');
+        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), url.pathname.includes('site-chrome') ? '1.2.0' : '20261017d');
       }
     }
     assert.match(html, /href="https:\/\/linktr\.ee\/ZuzaluLongevityChiangMai"/);

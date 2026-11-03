@@ -1,5 +1,7 @@
 import { HOME, COMMUNITY, BRAND_KIT, QUOTE, COPY, VERSION, languageCode, navigation } from './config.js';
-import { NOT_FOUND_COPY, NOT_FOUND_LANGUAGES, NOT_FOUND_DESTINATIONS } from './not-found.js';
+import { queryLanguages } from './language.js';
+export { LANGUAGES, queryLanguage, queryLanguages } from './language.js';
+import { NOT_FOUND_COPY, NOT_FOUND_DESTINATIONS } from './not-found.js';
 export { HOME, NAVIGATION, COMMUNITY, BRAND_KIT, QUOTE, VERSION, navigation, languageCode } from './config.js';
 export { NOT_FOUND_COPY, NOT_FOUND_LANGUAGES, NOT_FOUND_DESTINATIONS, notFoundLanguage } from './not-found.js';
 
@@ -15,18 +17,20 @@ const social = item => node('a', { class: 'fs-icon', href: item.href, 'aria-labe
   node('svg', { width: '18', height: '18', viewBox: '0 0 24 24', 'aria-hidden': 'true' }, node('path', { fill: 'currentColor', d: paths[item.key] })));
 const logo = (assetBase, lazy = false) => node('img', { src: `${assetBase}/logo.png`, alt: '4Seas', width: '500', height: '113', ...(lazy ? { loading: 'lazy' } : {}) });
 
-export function headerTree({ assetBase = '/site-chrome', section, locale, languages = [], id = 'fs-global-navigation' } = {}) {
+export function headerTree({ assetBase = '/site-chrome', section, locale, languages, id = 'fs-global-navigation' } = {}) {
   const copy = COPY[languageCode(locale)];
-  return node('header', { class: 'fs-header', 'data-site-chrome': VERSION },
+  const queryMode = !languages?.length;
+  languages = queryMode ? queryLanguages() : languages;
+  return node('header', { class: 'fs-header', lang: languageCode(locale), 'data-site-chrome': VERSION, ...(queryMode ? { 'data-query-language': '' } : {}) },
     node('div', { class: 'fs-header-inner' },
       node('a', { class: 'fs-brand', href: HOME, 'aria-label': copy.home }, logo(assetBase), node('span', { lang: 'en' }, 'A part of Zuzalu')),
       node('nav', { class: 'fs-navigation', id, 'aria-label': copy.navigation },
         navigation(locale).map(item => node('a', { href: item.href, ...(item.key === section ? { 'aria-current': 'page' } : {}) }, item.label))),
       node('div', { class: 'fs-tools' },
         languages.length > 0 && node('details', { class: 'fs-language' },
-          node('summary', { 'aria-label': copy.language }, node('span', { 'aria-hidden': 'true' }, '◎'), languages.find(item => item.code === locale)?.label || 'EN', node('span', { 'aria-hidden': 'true' }, '⌄')),
+          node('summary', { 'aria-label': copy.language }, node('span', { 'aria-hidden': 'true' }, '◎'), node('span', { class: 'fs-language-label' }, languages.find(item => languageCode(item.code) === languageCode(locale))?.label || 'EN'), node('span', { 'aria-hidden': 'true' }, '⌄')),
           node('div', { class: 'fs-language-list' }, languages.map(item => node('a', { href: item.href, lang: item.code, hreflang: item.code, 'data-language': item.code,
-            ...(item.code === locale ? { 'aria-current': 'true' } : {}) }, item.label)))),
+            ...(languageCode(item.code) === languageCode(locale) ? { 'aria-current': 'true' } : {}) }, item.label)))),
         node('div', { class: 'fs-header-social' }, COMMUNITY.slice(0, 2).map(social)),
         node('button', { class: 'fs-menu', type: 'button', 'aria-expanded': 'false', 'aria-controls': id }, copy.menu))));
 }
@@ -41,16 +45,12 @@ export function footerTree({ assetBase = '/site-chrome', locale } = {}) {
       { slot: 'footerExtra' })));
 }
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
-export function notFoundTree({ locale = 'en', onLanguage } = {}) {
+export function notFoundTree({ locale = 'en' } = {}) {
   const language = languageCode(locale);
   const text = NOT_FOUND_COPY[language];
   const copy = (tag, key, attrs = {}) => node(tag, { ...attrs, 'data-error-copy': key }, text[key]);
   return node('main', { class: 'fs-not-found', lang: language === 'zh' ? 'zh-CN' : language },
     node('div', { class: 'errorContainer' },
-      node('div', { class: 'errorLanguages', role: 'group', 'aria-label': text.language },
-        NOT_FOUND_LANGUAGES.map(item => node('button', { type: 'button', lang: item.code,
-          'data-error-language': item.code, 'aria-pressed': String(language === item.code),
-          ...(onLanguage ? { onClick: () => onLanguage(item.code) } : {}) }, item.label))),
       node('div', { class: 'errorLayout' },
         node('div', {}, node('span', { class: 'errorNumber', 'aria-hidden': 'true' }, '404'),
           copy('h1', 'title'), copy('p', 'description', { class: 'errorDescription' }),

@@ -15,3 +15,7 @@ export function notFoundLanguage(pathname?: string, basePath?: string): 'en' | '
 export const NOT_FOUND_COPY: Record<'en' | 'zh' | 'th', { title: string; description: string; home: string; events: string; explore: string; language: string; routes: string[] }>;
 export const NOT_FOUND_LANGUAGES: Array<{ code: string; label: string }>;
 export const NOT_FOUND_DESTINATIONS: string[];
+
+export const LANGUAGES: readonly { code: 'en' | 'zh' | 'th'; label: string }[];
+export function queryLanguage(search?: string, fallback?: 'en' | 'zh' | 'th'): 'en' | 'zh' | 'th';
+export function queryLanguages(pathname?: string, search?: string, hash?: string): Array<{code: string; label: string; href: string}>;
