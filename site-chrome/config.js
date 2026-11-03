@@ -1,14 +1,13 @@
 // Single source for all public sites. Business navigation belongs to each app.
-export const VERSION = '1.2.0';
+export const VERSION = '1.2.1';
 export const HOME = 'https://4seas.xyz/';
 export const NAVIGATION = Object.freeze([
-  { key: 'events', label: 'Events', href: 'https://4seas.xyz/event' },
-  { key: 'zuzalu', label: 'Zuzalu', href: HOME + '#Zuzalu' },
-  { key: 'about', label: 'About', href: HOME + '#about' },
-  { key: 'space', label: 'Space', href: HOME + '#Space' },
   { key: 'longevity', label: 'Longevity', href: HOME + 'longevity/' },
   { key: 'coliving', label: 'Coliving', href: HOME + 'coliving-community/' },
   { key: 'residency', label: 'Residency', href: HOME + 'residency' },
+  { key: 'events', label: 'Event', href: 'https://4seas.xyz/event' },
+  { key: 'zuzalu', label: 'Zuzalu', href: HOME + '#Zuzalu' },
+  { key: 'space', label: 'Space', href: HOME + '#Space' },
 ]);
 export const COMMUNITY = Object.freeze([
   { key: 'x', label: '4Seas on X', href: 'https://x.com/4seasDeSoc' },

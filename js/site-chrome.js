@@ -1,4 +1,4 @@
-// Generated from @4seas/site-chrome 1.2.0. Do not edit.
+// Generated from @4seas/site-chrome 1.2.1. Do not edit.
 (() => {
 const COPY = {"en":{"menu":"Menu","navigation":"4Seas navigation","language":"Choose language","home":"4Seas home"},"zh":{"menu":"菜单","navigation":"4Seas 主导航","language":"选择语言","home":"4Seas 首页"},"th":{"menu":"เมนู","navigation":"เมนูหลัก 4Seas","language":"เลือกภาษา","home":"หน้าหลัก 4Seas"}};
 const LANGUAGES = [{"code":"en","label":"EN"},{"code":"zh","label":"中文"},{"code":"th","label":"ไทย"}];

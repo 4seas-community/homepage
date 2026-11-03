@@ -8,10 +8,11 @@ import { mountHeader } from '../site-chrome/interaction.js';
 test('every public menu sends Coliving to the introduction directly after Longevity', () => {
   for (const locale of [undefined, 'en', 'zh', 'th', 'zh-CN']) {
     const items = navigation(locale);
-    assert.deepEqual(items.map(i => i.key), ['events', 'zuzalu', 'about', 'space', 'longevity', 'coliving', 'residency']);
+    assert.deepEqual(items.map(i => i.key), ['longevity', 'coliving', 'residency', 'events', 'zuzalu', 'space']);
     const item = items.find(i => i.key === 'coliving');
     assert.match(item.href, /^https:\/\/4seas.xyz\/coliving-community\/(en\/|zh\/|th\/)?$/);
-    assert.equal(items[0].href, 'https://4seas.xyz/event');
+    assert.deepEqual(items.map(i => i.label), ['Longevity', 'Coliving', 'Residency', 'Event', 'Zuzalu', 'Space']);
+    assert.equal(items[3].href, 'https://4seas.xyz/event');
   }
 });
 test('rendered chrome is complete without runtime fetches and escapes input', () => {

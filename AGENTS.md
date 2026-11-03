@@ -28,3 +28,12 @@ Key rules:
 - When CSS or JavaScript changes, version its URL in `index.html` so Cloudflare cannot serve the previous asset for up to seven days.
 
 The production payload allowlist is: `404.html`, `favicon.ico`, `index.html`, `css/`, `images/`, `js/`, `longevity/`, `coliving-community/`, and `RELEASE-MANIFEST.txt`. Tests, Git metadata, documentation, environment files, and credentials must never be included.
+
+## 公共 Header / Footer / 404（编码前必读）
+
+修改公开页面或新增系统前，必须先阅读[公共组件协作规范](site-chrome/CONTRIBUTING.zh-CN.md)。
+公共页头、页脚、语言入口和404只使用 `@4seas/site-chrome`，唯一源码在
+`4seas-community/homepage/site-chrome/`。不复制模板、另建菜单、隐藏语言入口、
+覆盖公共断点或手改生成文件。每页只渲染一套公共组件，保留语言路由与查询参数。
+公共规则变更从共享源码发起，更新固定版本与锁文件，验证正常页、404及桌面/手机。
+原有业务、后台、生产发布和数据权限边界继续有效。

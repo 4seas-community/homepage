@@ -1,6 +1,6 @@
 {
   "name": "@4seas/site-chrome",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Shared public 4Seas Header, Footer and NotFound page for static sites and React apps",
   "type": "module",
   "files": [

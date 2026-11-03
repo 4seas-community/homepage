@@ -1,5 +1,7 @@
 # Public Header, Footer and 404
 
+**Required for engineers and AI contributors:** read [公共组件协作规范](CONTRIBUTING.zh-CN.md) before changing public pages or integrating a new system.
+
 `@4seas/site-chrome` is maintained here, in the **homepage repository**. The
 homepage, Longevity, Coliving introduction, Event, Booking, Residency and
 CoLivingOS public application use this package. Admin layouts and business
