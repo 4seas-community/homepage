@@ -312,7 +312,7 @@ while IFS= read -r file; do
   if [[ "${relative}" == longevity/assets/* ]]; then
     path="${relative}?v=20261017d"
   elif [[ "${relative}" == coliving-community/assets/* ]]; then
-    path="${relative}?v=20261029"
+    path="${relative}?v=20261103"
   fi
   expected="$(sha256sum "${file}" | awk '{print $1}')"
   actual="$(curl -fsS --connect-timeout 5 --max-time 20 "https://4seas.xyz/${path}" | sha256sum | awk '{print $1}')"

@@ -200,3 +200,25 @@
 .cv29 #everyday img[src*="activity-questions"]{object-position:center 62%}
 .cv29 #everyday img[src*="activity-practice"]{filter:brightness(1.12);object-position:center 65%}
 @media(max-width:760px){.cv29 #everyday .cv29-feature-grid{row-gap:30px}}
+
+/* Keep full navigation at ordinary laptop widths; collapse only on narrow screens. */
+@media(min-width:901px){
+ .homepage-v21 .site-brand-header>.nav{flex-wrap:nowrap}
+ .homepage-v21 .site-brand-header .nav>.menu{display:none}
+ .homepage-v21 .site-brand-header .nav>.navlinks{display:flex;position:static;left:auto;right:auto;top:auto;z-index:auto;width:auto;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:18px;order:1}
+ .homepage-v21 .site-brand-header .nav>.navlinks>a{width:auto;min-height:0;padding:0;border-radius:0;white-space:nowrap}
+}
+@media(min-width:901px) and (max-width:1100px){
+ .homepage-v21 .site-brand-header>.nav{width:calc(100% - 48px);gap:14px}
+ .homepage-v21 .site-brand-header .nav>.brand{gap:10px}
+ .homepage-v21 .site-brand-header .nav>.brand img{width:132px}
+ .homepage-v21 .site-brand-header .nav>.brand small{font-size:14px}
+ .homepage-v21 .site-brand-header .nav>.navlinks{gap:14px}
+ .homepage-v21 .site-brand-header .nav>.navlinks>a{font-size:13px}
+}
+
+/* Pair each work-space heading with the two relevant photographs. */
+.cv49-work-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.cv49-work-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cv29 .cv49-work-group h3{font-size:18px;line-height:1.6;font-weight:500;letter-spacing:0;margin:0 0 16px}
+@media(max-width:760px){.cv49-work-groups{grid-template-columns:1fr;gap:28px}.cv49-work-pair{gap:16px}.cv29 .cv49-work-group h3{font-size:17px;margin-bottom:12px}}
