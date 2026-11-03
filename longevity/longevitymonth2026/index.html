@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <!-- This address stays in the browser. Do not send the top window to another URL. -->
+  <!-- Reading stays on this address. A form or a link off this page opens in the top window. -->
   <iframe id="month" title="Longevity Month 2026"
     src="https://4seas.xyz/coliving/en/longevity/longevitymonth2026"></iframe>
   <script>
@@ -23,26 +23,22 @@
     frame.addEventListener("load", function () {
       var doc;
       try { doc = frame.contentDocument; } catch (e) { return; }
-      if (!doc || doc.documentElement.dataset.monthStay === "1") return;
-      doc.documentElement.dataset.monthStay = "1";
+      if (!doc || doc.__monthStay) return;
+      doc.__monthStay = true;
       var base = frame.contentWindow.location.href;
+      var here = new URL(base);
 
       function outside(href) {
         try {
           var url = new URL(href, base);
-          return url.origin !== "https://4seas.xyz" || url.pathname.indexOf("/longevity/longevitymonth2026") === -1;
+          return url.origin !== here.origin || !/\/longevity\/longevitymonth2026(?=\/|$)/.test(url.pathname);
         } catch (e) {
           return false;
         }
       }
 
-      function leaveForPeer(form) {
-        if (!form || !form.getAttribute) return;
-        var action = form.getAttribute("action") || "";
-        var method = form.querySelector('input[name="method"]');
-        if (action.indexOf("/pay/start") !== -1 && method && method.value === "peer") {
-          form.setAttribute("target", "_top");
-        }
+      function leaveForm(form) {
+        if (form && form.setAttribute) form.setAttribute("target", "_top");
       }
 
       doc.addEventListener("click", function (event) {
@@ -52,11 +48,11 @@
         if (link && link.getAttribute("target") !== "_blank" && outside(link.getAttribute("href"))) {
           link.setAttribute("target", "_top");
         }
-        leaveForPeer(node.closest("form"));
+        leaveForm(node.closest("form"));
       }, true);
 
       doc.addEventListener("submit", function (event) {
-        leaveForPeer(event.target);
+        leaveForm(event.target);
       }, true);
     });
   </script>
