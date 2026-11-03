@@ -216,3 +216,9 @@
  .homepage-v21 .site-brand-header .nav>.navlinks{gap:14px}
  .homepage-v21 .site-brand-header .nav>.navlinks>a{font-size:13px}
 }
+
+/* Pair each work-space heading with the two relevant photographs. */
+.cv49-work-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.cv49-work-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cv29 .cv49-work-group h3{font-size:18px;line-height:1.6;font-weight:500;letter-spacing:0;margin:0 0 16px}
+@media(max-width:760px){.cv49-work-groups{grid-template-columns:1fr;gap:28px}.cv49-work-pair{gap:16px}.cv29 .cv49-work-group h3{font-size:17px;margin-bottom:12px}}
