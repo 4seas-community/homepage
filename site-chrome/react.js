@@ -1,6 +1,6 @@
 'use client';
-import { createElement, Fragment, useEffect, useId, useRef } from 'react';
-import { headerTree, footerTree } from './index.js';
+import { createElement, Fragment, useEffect, useId, useRef, useState } from 'react';
+import { headerTree, footerTree, notFoundTree, notFoundLanguage, NOT_FOUND_COPY, languageCode } from './index.js';
 import { mountHeader } from './interaction.js';
 
 function render(tree, extra, rootRef) {
@@ -18,4 +18,12 @@ export function Header(props) {
 }
 export function Footer({ children, ...props }) {
   return render(footerTree(props), children);
+}
+export function NotFound({ locale, pathname = '', basePath }) {
+  const initial = locale || notFoundLanguage(pathname, basePath);
+  const [selection, setSelection] = useState(null);
+  useEffect(() => setSelection(null), [initial, pathname]);
+  const language = languageCode(selection || initial);
+  useEffect(() => { document.title = NOT_FOUND_COPY[language].title + ' | 4Seas'; }, [language]);
+  return render(notFoundTree({ locale: language, onLanguage: setSelection }));
 }

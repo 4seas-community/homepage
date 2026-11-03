@@ -1,4 +1,4 @@
-# Public Header and Footer
+# Public Header, Footer and 404
 
 `@4seas/site-chrome` is maintained here, in the **homepage repository**. The
 homepage, Longevity, Coliving introduction, Event, Booking, Residency and
@@ -9,7 +9,7 @@ not the application currently served at `/coliving`.
 ## One source
 
 - `config.js`: navigation, destinations, community links and brand copy.
-- `index.js`: one framework-neutral Header/Footer tree and the HTML renderer.
+- `index.js`: one framework-neutral Header/Footer/404 tree and the HTML renderer.
 - `react.js`: thin React renderer of that same tree; no duplicate JSX template.
 - `interaction.js`: the same accessible menu controller for static and React.
 - `style.css`, `assets/`: isolated public styles and original brand artwork.
@@ -61,3 +61,22 @@ can carry an application build badge without duplicating the footer.
 
 All production assets are local and versioned. Rollback means reverting each
 consumer's package pin (or the static generation commit), not editing live HTML.
+
+## Shared 404
+
+`NotFound` (React) and `renderNotFound` (static HTML) use the same tree,
+translations, canonical recovery links and stylesheet. App wrappers supply only
+`pathname` and their deployment `basePath`. The page detects the first locale
+segment after that prefix, and offers Chinese, English and Thai switching.
+No extra navigation element is introduced; the existing Header/Footer are used
+once by each route layout. The booking destination is `https://book.4seas.xyz/`.
+
+`404.html` and `js/site-not-found.js` are generated output. Run
+`python3 scripts/preview.py --port 4200` (or `npm run preview`) to preview static
+pages with that real 404 fallback. A missing nested URL keeps HTTP 404 and its
+original address; HEAD has the same status/headers and no response body. The
+preview is bound to localhost and does not expose directory listings or source
+files. A plain `python -m http.server` instead shows Python's built-in error page.
+
+When changing published styles/scripts, bump the package version and `VERSION`
+in `config.js` before generation, so all static asset URLs invalidate caches.

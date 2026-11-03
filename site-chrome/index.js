@@ -1,5 +1,7 @@
 import { HOME, COMMUNITY, BRAND_KIT, QUOTE, COPY, VERSION, languageCode, navigation } from './config.js';
+import { NOT_FOUND_COPY, NOT_FOUND_LANGUAGES, NOT_FOUND_DESTINATIONS } from './not-found.js';
 export { HOME, NAVIGATION, COMMUNITY, BRAND_KIT, QUOTE, VERSION, navigation, languageCode } from './config.js';
+export { NOT_FOUND_COPY, NOT_FOUND_LANGUAGES, NOT_FOUND_DESTINATIONS, notFoundLanguage } from './not-found.js';
 
 // A framework-neutral tree is rendered by both adapters: no second JSX template.
 const node = (tag, attrs = {}, ...children) => ({ tag, attrs, children: children.flat().filter(child => child != null && child !== false) });
@@ -39,11 +41,30 @@ export function footerTree({ assetBase = '/site-chrome', locale } = {}) {
       { slot: 'footerExtra' })));
 }
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+export function notFoundTree({ locale = 'en', onLanguage } = {}) {
+  const language = languageCode(locale);
+  const text = NOT_FOUND_COPY[language];
+  const copy = (tag, key, attrs = {}) => node(tag, { ...attrs, 'data-error-copy': key }, text[key]);
+  return node('main', { class: 'fs-not-found', lang: language === 'zh' ? 'zh-CN' : language },
+    node('div', { class: 'errorContainer' },
+      node('div', { class: 'errorLanguages', role: 'group', 'aria-label': text.language },
+        NOT_FOUND_LANGUAGES.map(item => node('button', { type: 'button', lang: item.code,
+          'data-error-language': item.code, 'aria-pressed': String(language === item.code),
+          ...(onLanguage ? { onClick: () => onLanguage(item.code) } : {}) }, item.label))),
+      node('div', { class: 'errorLayout' },
+        node('div', {}, node('span', { class: 'errorNumber', 'aria-hidden': 'true' }, '404'),
+          copy('h1', 'title'), copy('p', 'description', { class: 'errorDescription' }),
+          node('div', { class: 'errorActions' }, copy('a', 'home', { href: HOME }), copy('a', 'events', { href: 'https://4seas.xyz/event' }))),
+        node('section', { class: 'errorRoutes', 'aria-label': text.explore }, copy('h2', 'explore'),
+          NOT_FOUND_DESTINATIONS.map((href, index) => node('a', { href, class: 'errorRoute' },
+            node('span', { 'data-error-route': String(index) }, text.routes[index]), node('span', { 'aria-hidden': 'true' }, '↗')))))));
+}
 export function renderHtml(tree) {
   if (typeof tree === 'string' || typeof tree === 'number') return escape(tree);
   if (tree.slot) return '';
-  const attrs = Object.entries(tree.attrs).map(([key, value]) => ` ${key}="${escape(value)}"`).join('');
+  const attrs = Object.entries(tree.attrs).filter(([, value]) => value != null && typeof value !== 'function').map(([key, value]) => ` ${key}="${escape(value)}"`).join('');
   return `<${tree.tag}${attrs}>` + (tree.tag === 'img' ? '' : tree.children.map(renderHtml).join('') + `</${tree.tag}>`);
 }
 export const renderHeader = options => renderHtml(headerTree(options));
 export const renderFooter = options => renderHtml(footerTree(options));
+export const renderNotFound = options => renderHtml(notFoundTree(options));

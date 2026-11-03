@@ -1,4 +1,4 @@
-// Generated from @4seas/site-chrome 1.0.0. Do not edit.
+// Generated from @4seas/site-chrome 1.1.0. Do not edit.
 (() => {
 // Used unchanged by React and the generated static script.
 function mountHeader(root) {

@@ -68,3 +68,33 @@
   .fs-footer .fs-footer-row { justify-content: center; }
   .fs-footer .fs-footer-links { justify-content: center; gap: 12px; }
 }
+
+/* Shared 4Seas error page; deliberately scoped to avoid changing module themes. */
+.fs-not-found.fs-not-found { min-height: 550px; box-sizing: border-box; width: 100%; flex: 1; background: #f4f8f2; color: #163d32; font-family: Arial, sans-serif; }
+.fs-not-found * { box-sizing: border-box; }
+.fs-not-found a { color: inherit; text-decoration: none; }
+.fs-not-found .errorContainer { max-width: 1230px; margin: 0 auto; padding: 28px 40px 80px; }
+.fs-not-found .errorLanguages { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 44px; }
+.fs-not-found .errorLanguages button { padding: 8px 12px; border: 1px solid transparent; border-radius: 20px; color: #426357; background: transparent; font: inherit; font-size: 13px; cursor: pointer; }
+.fs-not-found .errorLanguages button[aria-pressed='true'] { background: #d7f5e7; border-color: #a6d9c3; color: #005040; }
+.fs-not-found .errorLayout { display: grid; grid-template-columns: 1.15fr 1fr; gap: 72px; align-items: center; }
+.fs-not-found .errorNumber { display: block; margin: 0 0 20px; font-size: clamp(64px, 7vw, 100px); font-weight: 700; letter-spacing: -.06em; line-height: .95; color: #005040; }
+.fs-not-found h1 { color: #163d32; margin: 0 0 18px; font-family: inherit; font-size: clamp(30px, 3vw, 42px); font-weight: 600; letter-spacing: -.025em; line-height: 1.15; }
+.fs-not-found .errorDescription { margin: 0; max-width: 440px; color: #526b60; font-size: 17px; line-height: 1.65; }
+.fs-not-found .errorActions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+.fs-not-found .errorActions a { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 20px; border: 1px solid #005040; border-radius: 8px; font-size: 15px; font-weight: 600; }
+.fs-not-found .errorActions a:first-child { background: #005040; color: #fff; }
+.fs-not-found .errorActions a:hover { background: #d7f5e7; color: #005040; }
+.fs-not-found .errorRoutes { border-top: 1px solid #bdcfc1; padding-top: 22px; }
+.fs-not-found .errorRoutes h2 { margin: 0 0 18px; font-size: 14px; line-height: 1.5; font-weight: 600; color: #526b60; }
+.fs-not-found .errorRoute { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; border-bottom: 1px solid #dbe4d9; font-size: 17px; font-weight: 600; }
+.fs-not-found .errorRoute span:last-child { color: #005040; font-size: 22px; font-weight: 400; }
+.fs-not-found .errorRoute:hover { color: #00805f; }
+.fs-not-found :is(a,button):focus-visible { outline: 2px solid #005040; outline-offset: 4px; }
+@media (max-width: 767px) {
+ .fs-not-found .errorContainer { padding: 24px 24px 48px; }
+ .fs-not-found .errorLanguages { margin-bottom: 36px; }
+ .fs-not-found .errorLayout { grid-template-columns: 1fr; gap: 44px; }
+ .fs-not-found .errorDescription { font-size: 16px; }
+ .fs-not-found .errorActions a { flex: 1; white-space: nowrap; }
+}

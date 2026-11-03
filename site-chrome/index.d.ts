@@ -10,3 +10,8 @@ export function navigation(locale?: string): NavigationItem[];
 export function languageCode(locale?: string): 'en' | 'zh' | 'th';
 export function renderHeader(options?: HeaderProps & { id?: string }): string;
 export function renderFooter(options?: FooterProps): string;
+export function renderNotFound(options?: { locale?: string }): string;
+export function notFoundLanguage(pathname?: string, basePath?: string): 'en' | 'zh' | 'th';
+export const NOT_FOUND_COPY: Record<'en' | 'zh' | 'th', { title: string; description: string; home: string; events: string; explore: string; language: string; routes: string[] }>;
+export const NOT_FOUND_LANGUAGES: Array<{ code: string; label: string }>;
+export const NOT_FOUND_DESTINATIONS: string[];

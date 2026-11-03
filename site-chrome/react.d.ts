@@ -8,3 +8,5 @@ export interface HeaderProps {
 export interface FooterProps { assetBase?: string; locale?: string; children?: ReactNode }
 export function Header(props: HeaderProps): ReactNode;
 export function Footer(props: FooterProps): ReactNode;
+export interface NotFoundProps { locale?: string; pathname?: string; basePath?: string }
+export function NotFound(props: NotFoundProps): ReactNode;

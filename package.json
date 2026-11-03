@@ -1,20 +1,37 @@
 {
   "name": "@4seas/site-chrome",
-  "version": "1.0.0",
-  "description": "Shared public 4Seas Header and Footer for static sites and React apps",
+  "version": "1.1.0",
+  "description": "Shared public 4Seas Header, Footer and NotFound page for static sites and React apps",
   "type": "module",
-  "files": ["site-chrome"],
+  "files": [
+    "site-chrome"
+  ],
   "exports": {
-    ".": { "types": "./site-chrome/index.d.ts", "default": "./site-chrome/index.js" },
-    "./react": { "types": "./site-chrome/react.d.ts", "default": "./site-chrome/react.js" },
+    ".": {
+      "types": "./site-chrome/index.d.ts",
+      "default": "./site-chrome/index.js"
+    },
+    "./react": {
+      "types": "./site-chrome/react.d.ts",
+      "default": "./site-chrome/react.js"
+    },
     "./style.css": "./site-chrome/style.css"
   },
-  "bin": { "4seas-chrome-assets": "./site-chrome/copy-assets.js" },
-  "peerDependencies": { "react": ">=18 <20" },
-  "peerDependenciesMeta": { "react": { "optional": true } },
+  "bin": {
+    "4seas-chrome-assets": "./site-chrome/copy-assets.js"
+  },
+  "peerDependencies": {
+    "react": ">=18 <20"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "scripts": {
     "chrome:generate": "node scripts/generate-site-chrome.mjs",
     "chrome:check": "node scripts/generate-site-chrome.mjs --check",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "preview": "python3 scripts/preview.py"
   }
 }
