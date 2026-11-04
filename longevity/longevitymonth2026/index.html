@@ -4,13 +4,57 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Longevity Month 2026</title>
-  <link rel="canonical" href="https://4seas.xyz/coliving/en/longevity/longevitymonth2026">
-  <script>
-    location.replace("https://4seas.xyz/coliving/en/longevity/longevitymonth2026" + location.search + location.hash);
-  </script>
-  <meta http-equiv="refresh" content="0; url=https://4seas.xyz/coliving/en/longevity/longevitymonth2026">
+  <link rel="canonical" href="https://4seas.xyz/longevity/longevitymonth2026/">
+  <style>
+    html, body { margin: 0; height: 100%; background: #fffefa; overflow: hidden; }
+    iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fffefa; }
+  </style>
 </head>
 <body>
-  <p><a href="https://4seas.xyz/coliving/en/longevity/longevitymonth2026">Longevity Month 2026</a></p>
+  <!-- Reading stays on this address. A form or a link off this page opens in the top window. -->
+  <iframe id="month" title="Longevity Month 2026"
+    src="https://4seas.xyz/coliving/en/longevity/longevitymonth2026"></iframe>
+  <script>
+    var page = "https://4seas.xyz/coliving/en/longevity/longevitymonth2026";
+    var frame = document.getElementById("month");
+    var extra = location.search + location.hash;
+    if (extra) frame.src = page + extra;
+
+    frame.addEventListener("load", function () {
+      var doc;
+      try { doc = frame.contentDocument; } catch (e) { return; }
+      if (!doc || doc.__monthStay) return;
+      doc.__monthStay = true;
+      var base = frame.contentWindow.location.href;
+      var here = new URL(base);
+
+      function outside(href) {
+        try {
+          var url = new URL(href, base);
+          return url.origin !== here.origin || !/\/longevity\/longevitymonth2026(?=\/|$)/.test(url.pathname);
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function leaveForm(form) {
+        if (form && form.setAttribute) form.setAttribute("target", "_top");
+      }
+
+      doc.addEventListener("click", function (event) {
+        var node = event.target && event.target.nodeType === 1 ? event.target : event.target && event.target.parentElement;
+        if (!node || !node.closest) return;
+        var link = node.closest("a[href]");
+        if (link && link.getAttribute("target") !== "_blank" && outside(link.getAttribute("href"))) {
+          link.setAttribute("target", "_top");
+        }
+        leaveForm(node.closest("form"));
+      }, true);
+
+      doc.addEventListener("submit", function (event) {
+        leaveForm(event.target);
+      }, true);
+    });
+  </script>
 </body>
 </html>
