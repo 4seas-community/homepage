@@ -6,14 +6,28 @@ import { navigation, renderHeader, renderFooter, QUOTE, queryLanguage, queryLang
 import { mountHeader } from '../site-chrome/interaction.js';
 
 test('every public menu sends Coliving to the introduction directly after Longevity', () => {
+  const english = ['Longevity', 'Coliving', 'Residency', 'Event', 'Zuzalu', 'Space'];
+  const thai = ['สุขภาพระยะยาว', 'ที่พักร่วมกัน', 'โปรแกรมพำนัก', 'กิจกรรม', 'Zuzalu', 'พื้นที่'];
   for (const locale of [undefined, 'en', 'zh', 'th', 'zh-CN']) {
     const items = navigation(locale);
     assert.deepEqual(items.map(i => i.key), ['longevity', 'coliving', 'residency', 'events', 'zuzalu', 'space']);
     const item = items.find(i => i.key === 'coliving');
     assert.match(item.href, /^https:\/\/4seas.xyz\/coliving-community\/(en\/|zh\/|th\/)?$/);
-    assert.deepEqual(items.map(i => i.label), ['Longevity', 'Coliving', 'Residency', 'Event', 'Zuzalu', 'Space']);
+    assert.deepEqual(items.map(i => i.label), locale === 'th' ? thai : english);
     assert.equal(items[3].href, 'https://4seas.xyz/event');
   }
+});
+test('Thai header keeps the existing Thai tagline and navigation', () => {
+  const html = renderHeader({ locale: 'th', languages: [{ code: 'th', label: 'ไทย', href: '/longevity/th/' }] });
+  assert.match(html, /<span lang="th">ส่วนหนึ่งของ Zuzalu<\/span>/);
+  assert.match(html, /กิจกรรม/);
+  assert.match(html, /สุขภาพระยะยาว/);
+  assert.match(html, /ที่พักร่วมกัน/);
+  assert.match(html, /โปรแกรมพำนัก/);
+  assert.match(html, /พื้นที่/);
+  const chinese = renderHeader({ locale: 'zh' });
+  assert.match(chinese, /<span lang="en">A part of Zuzalu<\/span>/);
+  assert.match(chinese, />Longevity</);
 });
 test('rendered chrome is complete without runtime fetches and escapes input', () => {
   const html = renderHeader({ locale: 'zh', section: 'coliving', languages: [{ code: 'zh', label: '<中文>', href: '/zh/?q="x"&t=1' }] });

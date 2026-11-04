@@ -23,9 +23,9 @@ export function headerTree({ assetBase = '/site-chrome', section, locale, langua
   languages = queryMode ? queryLanguages() : languages;
   return node('header', { class: 'fs-header', lang: languageCode(locale), 'data-site-chrome': VERSION, ...(queryMode ? { 'data-query-language': '' } : {}) },
     node('div', { class: 'fs-header-inner' },
-      node('a', { class: 'fs-brand', href: HOME, 'aria-label': copy.home }, logo(assetBase), node('span', { lang: 'en' }, 'A part of Zuzalu')),
+      node('a', { class: 'fs-brand', href: HOME, 'aria-label': copy.home }, logo(assetBase), node('span', { lang: copy.taglineLang }, copy.tagline)),
       node('nav', { class: 'fs-navigation', id, 'aria-label': copy.navigation },
-        navigation(locale).map(item => node('a', { href: item.href, ...(item.key === section ? { 'aria-current': 'page' } : {}) }, item.label))),
+        navigation(locale).map(item => node('a', { href: item.href, ...(item.key === section ? { 'aria-current': 'page' } : {}) }, item.labels[languageCode(locale)]))),
       node('div', { class: 'fs-tools' },
         languages.length > 0 && node('details', { class: 'fs-language' },
           node('summary', { 'aria-label': copy.language }, node('span', { 'aria-hidden': 'true' }, '◎'), node('span', { class: 'fs-language-label' }, languages.find(item => languageCode(item.code) === languageCode(locale))?.label || 'EN'), node('span', { 'aria-hidden': 'true' }, '⌄')),

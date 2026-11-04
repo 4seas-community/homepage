@@ -1,5 +1,5 @@
 import type { HeaderProps, FooterProps } from './react.js';
-export interface NavigationItem { key: string; label: string; href: string }
+export interface NavigationItem { key: string; label: string; href: string; labels?: { en: string; zh: string; th: string } }
 export const VERSION: string;
 export const HOME: string;
 export const NAVIGATION: readonly NavigationItem[];
