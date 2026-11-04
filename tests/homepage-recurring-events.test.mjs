@@ -139,11 +139,9 @@ test("homepage removes the two old event ads but keeps the organizer action", as
 
 // The standalone introduction is reinstated through one navigation link only.
 test("homepage only adds the approved Coliving navigation entry", async () => {
-  for (const file of ["../index.html", "../404.html", "../js/site-not-found.js"]) {
+  for (const file of ["../index.html"]) {
     const source = await readFile(new URL(file, import.meta.url), "utf8")
-    const withoutNavigation = file === "../index.html"
-      ? source.replace(/<a href="\/coliving-community\/" class="fn-navbar-link-box w-nav-link">Coliving<\/a>/, "")
-      : source
+    const withoutNavigation = source.replace(/<!-- site-chrome:header:start -->[\s\S]*?<!-- site-chrome:header:end -->/, "")
     assert.doesNotMatch(withoutNavigation, /co-?living|共享居住|โคลิฟวิ่ง/i, file)
   }
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8")

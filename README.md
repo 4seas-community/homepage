@@ -1,5 +1,9 @@
 # 4Seas Homepage
 
+## 开发协作：公共页面组件
+
+工程师与AI编码前必读：[Header / Footer / 404统一规则](site-chrome/CONTRIBUTING.zh-CN.md)。公共组件只维护在homepage的 `site-chrome/`；本仓库遵守同一套接入和验证规则。
+
 Static source for [4seas.xyz](https://4seas.xyz/).
 
 GitHub is the only source of truth for Homepage development:
@@ -22,7 +26,7 @@ push or a Gitea sync alone.
 
 ```bash
 node --test tests/*.test.mjs
-python3 -m http.server 4173 --bind 127.0.0.1
+npm run preview -- --port 4173
 ```
 
 Open `http://127.0.0.1:4173/` and inspect both desktop and narrow layouts.
