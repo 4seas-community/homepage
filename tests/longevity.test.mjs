@@ -40,7 +40,7 @@ test('standalone pages resolve local dependencies, anchors and all three languag
         let file = join(root, url.pathname);
         if (url.pathname.endsWith('/')) file += 'index.html';
         assert(existsSync(file), `${path}: ${reference}`);
-        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), '20261017d');
+        if (/\.(?:css|js|mjs)$/.test(url.pathname)) assert.equal(url.searchParams.get('v'), url.pathname.includes('site-chrome') ? '1.2.2' : '20261017d');
       }
     }
     assert.match(html, /href="https:\/\/linktr\.ee\/ZuzaluLongevityChiangMai"/);
@@ -51,7 +51,7 @@ test('standalone pages resolve local dependencies, anchors and all three languag
     assert.match(html, /2026-12-28/);
     assert.doesNotMatch(html, /\bconference\b|Second Nomad Market|v11-os-connection/);
   }
-  assert.match(read('index.html'), /href="\/longevity\/"[^>]*>Longevity<\/a>/);
+  assert.match(read('index.html'), /href="https:\/\/4seas.xyz\/longevity\/"[^>]*>Longevity<\/a>/);
 });
 
 test('Sola fixture maps to display fields, real profiles and valid period boundaries', () => {
