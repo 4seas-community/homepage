@@ -39,7 +39,7 @@ test("homepage keeps Longevity first, ETHChiangmai second, and Xenoria City thir
   const bannerStart = source.indexOf('<div class="swiper-wrapper banner_slider_wrapper">')
   const bannerEnd = source.indexOf('<div class="code_hide w-embed w-script">', bannerStart)
   const banner = source.slice(bannerStart, bannerEnd)
-  const poster = await readFile(new URL("../images/zuzalu-longevity-month-2026-20261023.webp", import.meta.url))
+  const poster = await readFile(new URL("../images/zuzalu-longevity-month-2026-20261106.webp", import.meta.url))
 
   const slides = banner.split('<div class="swiper-slide banner_slider_item">').slice(1)
   assert.equal(slides.length, 3)
@@ -48,8 +48,8 @@ test("homepage keeps Longevity first, ETHChiangmai second, and Xenoria City thir
     assert.equal(found.length, 1)
     return found[0].slice(6, -1)
   }
-  assert.equal(hrefOf(slides[0]), "https://4seas.xyz/longevity/")
-  assert.match(slides[0], /zuzalu-longevity-month-2026-20261023\.webp/)
+  assert.equal(hrefOf(slides[0]), "https://4seas.xyz/longevity/longevitymonth2026/")
+  assert.match(slides[0], /zuzalu-longevity-month-2026-20261106\.webp/)
   assert.doesNotMatch(slides[0], /ethchiangmai|xenoria/)
   assert.equal(hrefOf(slides[1]), "https://ethchiangmai.com")
   assert.match(slides[1], /ethchiangmai-2026-2700x750-20261022\.webp/)
@@ -60,7 +60,7 @@ test("homepage keeps Longevity first, ETHChiangmai second, and Xenoria City thir
   assert.match(slides[2], /target="_blank" rel="noopener noreferrer"/)
   assert.doesNotMatch(slides[2], /zuzalu-longevity|ethchiangmai|4seas\.xyz\/longevity/)
   assert.equal((source.match(/class="swiper-slide banner_slider_item"/g) || []).length, 3)
-  assert.ok(banner.indexOf('zuzalu-longevity-month-2026-20261023.webp') < banner.indexOf('ethchiangmai-2026-'))
+  assert.ok(banner.indexOf('zuzalu-longevity-month-2026-20261106.webp') < banner.indexOf('ethchiangmai-2026-'))
   assert.ok(banner.indexOf('ethchiangmai-2026-') < banner.indexOf('xenoria-city-2026-'))
   assert.match(source, /src="js\/banner-slider\.js\?v=20260906-ethchiangmai"/)
   const slider = await readFile(new URL('../js/banner-slider.js', import.meta.url), 'utf8')
