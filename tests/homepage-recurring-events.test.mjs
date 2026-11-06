@@ -71,7 +71,11 @@ test("homepage keeps Longevity first, ETHChiangmai second, and Xenoria City thir
   assert.equal(poster.subarray(0, 4).toString("ascii"), "RIFF")
   assert.equal(poster.subarray(8, 12).toString("ascii"), "WEBP")
   assert.match(styles, /\.section-2 \.longevity-banner-image \{[\s\S]*?position: static;/)
-  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20261023-banner-links"/)
+  // The 3:1 registration poster must be scaled down inside the 18:5 frame, not
+  // cropped: without its own aspect-ratio the element kept the artwork's ratio,
+  // overflowed the frame and lost the bottom line.
+  assert.match(styles, /\.section-2 \.longevity-banner-image \{[\s\S]*?aspect-ratio: 18 \/ 5;[\s\S]*?object-fit: contain;/)
+  assert.match(source, /href="css\/4seas-631dbf\.webflow\.css\?v=20261107-banner-contain"/)
   assert.match(styles, /\.section-2 \.longevity-banner-frame > a \{[\s\S]*?display: block;/)
 })
 
