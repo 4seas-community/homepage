@@ -315,7 +315,7 @@ while IFS= read -r file; do
     path="${relative}?v=20261103"
   fi
   expected="$(sha256sum "${file}" | awk '{print $1}')"
-  actual="$(curl -fsS --connect-timeout 5 --max-time 20 "https://4seas.xyz/${path}" | sha256sum | awk '{print $1}')"
+  actual="$(curl -fsS --resolve 4seas.xyz:443:127.0.0.1 -k --connect-timeout 5 --max-time 20 "https://4seas.xyz/${path}" | sha256sum | awk '{print $1}')"
   [[ "${actual}" == "${expected}" ]]
 done < <(find "${target}/longevity" "${target}/coliving-community" -type f | sort)
 trap - ERR

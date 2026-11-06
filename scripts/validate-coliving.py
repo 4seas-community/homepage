@@ -34,8 +34,17 @@ def validate(root, base_url):
         content, status = response.stdout.rsplit(b'\n', 1)
         if status != b'200':
             raise ValueError('HTTP failure: ' + str(relative))
-        if hashlib.sha256(content).digest() != hashlib.sha256(path.read_bytes()).digest():
-            raise ValueError('Content hash mismatch: ' + str(relative))
+        local_bytes = path.read_bytes()
+        if hashlib.sha256(content).digest() != hashlib.sha256(local_bytes).digest():
+            import re
+            normalized = re.sub(rb'<a class="cv29-email" href="/cdn-cgi/l/email-protection[^"]*">.*?</a>',
+                                b'<a class="cv29-email" href="mailto:4seascoliving@gmail.com">4seascoliving@gmail.com</a>',
+                                content)
+            normalized = re.sub(rb'<script data-cfasync="false" src="/cdn-cgi/scripts/[^"]*/email-decode\.min\.js"></script>',
+                                b'',
+                                normalized)
+            if hashlib.sha256(normalized).digest() != hashlib.sha256(local_bytes).digest():
+                raise ValueError('Content hash mismatch: ' + str(relative))
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
         list(pool.map(check, files))
     return len(files)
