@@ -14,7 +14,8 @@ test('every public menu sends Coliving to the introduction directly after Longev
     const item = items.find(i => i.key === 'coliving');
     assert.match(item.href, /^https:\/\/4seas.xyz\/coliving-community\/(en\/|zh\/|th\/)?$/);
     const loginItem = items.find(i => i.key === 'login');
-    assert.match(loginItem.href, /^https:\/\/4seas.xyz\/coliving\/(en\/|zh\/|th\/)?login$/);
+    const loginLocale = locale === 'th' ? 'th' : locale === 'zh' || locale === 'zh-CN' ? 'zh' : 'en';
+    assert.equal(loginItem.href, `https://4seas.xyz/coliving/${loginLocale}/login`);
     assert.deepEqual(items.map(i => i.label), locale === 'th' ? thai : english);
     assert.equal(items[3].href, 'https://4seas.xyz/event');
   }

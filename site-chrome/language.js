@@ -42,6 +42,9 @@ export function mountQueryLanguage(root, helpers) {
     if (/^\/(longevity|coliving-community)\//.test(url.pathname)) {
       url.pathname = url.pathname.replace(/\/(?:en|zh|th)\/$/, '/') + locale + '/';
       link.href = url.href;
+    } else if (/^\/coliving\/(?:en|zh|th)\/login\/?$/.test(url.pathname)) {
+      url.pathname = '/coliving/' + locale + '/login';
+      link.href = url.href;
     }
   });
 }

@@ -1,5 +1,5 @@
 // Single source for all public sites. Business navigation belongs to each app.
-export const VERSION = '1.2.4';
+export const VERSION = '1.2.5';
 export const HOME = 'https://4seas.xyz/';
 export const NAVIGATION = Object.freeze([
   { key: 'longevity', label: 'Longevity', labels: { en: 'Longevity', zh: 'Longevity', th: 'สุขภาพระยะยาว' }, href: HOME + 'longevity/' },
@@ -8,7 +8,7 @@ export const NAVIGATION = Object.freeze([
   { key: 'events', label: 'Event', labels: { en: 'Event', zh: 'Event', th: 'กิจกรรม' }, href: 'https://4seas.xyz/event' },
   { key: 'zuzalu', label: 'Zuzalu', labels: { en: 'Zuzalu', zh: 'Zuzalu', th: 'Zuzalu' }, href: HOME + '#Zuzalu' },
   { key: 'space', label: 'Space', labels: { en: 'Space', zh: 'Space', th: 'พื้นที่' }, href: HOME + '#Space' },
-  { key: 'login', label: 'Login', labels: { en: 'Login', zh: 'Login', th: 'เข้าสู่ระบบ' }, href: HOME + 'coliving/login' },
+  { key: 'login', label: 'Login', labels: { en: 'Login', zh: 'Login', th: 'เข้าสู่ระบบ' }, href: HOME + 'coliving/en/login' },
 ]);
 export const COMMUNITY = Object.freeze([
   { key: 'x', label: '4Seas on X', href: 'https://x.com/4seasDeSoc' },
@@ -33,7 +33,7 @@ export function navigation(locale) {
     href: locale && ['coliving', 'longevity'].includes(item.key)
       ? item.href + code + '/'
       : item.key === 'login'
-        ? (locale ? HOME + 'coliving/' + code + '/login' : item.href)
+        ? HOME + 'coliving/' + (locale ? code : 'en') + '/login'
         : item.href,
   }));
 }
