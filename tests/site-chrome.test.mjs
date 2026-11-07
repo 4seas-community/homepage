@@ -6,14 +6,17 @@ import { navigation, renderHeader, renderFooter, QUOTE, queryLanguage, queryLang
 import { mountHeader } from '../site-chrome/interaction.js';
 
 test('every public menu sends Coliving to the introduction directly after Longevity', () => {
-  const english = ['Longevity', 'Coliving', 'Residency', 'Event', 'Zuzalu', 'Space'];
-  const thai = ['สุขภาพระยะยาว', 'ที่พักร่วมกัน', 'โปรแกรมพำนัก', 'กิจกรรม', 'Zuzalu', 'พื้นที่'];
+  const english = ['Longevity', 'Coliving', 'Residency', 'Event', 'Zuzalu', 'Space', 'Login'];
+  const chinese = ['Longevity', 'Coliving', 'Residency', 'Event', 'Zuzalu', 'Space', '登录'];
+  const thai = ['สุขภาพระยะยาว', 'ที่พักร่วมกัน', 'โปรแกรมพำนัก', 'กิจกรรม', 'Zuzalu', 'พื้นที่', 'เข้าสู่ระบบ'];
   for (const locale of [undefined, 'en', 'zh', 'th', 'zh-CN']) {
     const items = navigation(locale);
-    assert.deepEqual(items.map(i => i.key), ['longevity', 'coliving', 'residency', 'events', 'zuzalu', 'space']);
+    assert.deepEqual(items.map(i => i.key), ['longevity', 'coliving', 'residency', 'events', 'zuzalu', 'space', 'login']);
     const item = items.find(i => i.key === 'coliving');
     assert.match(item.href, /^https:\/\/4seas.xyz\/coliving-community\/(en\/|zh\/|th\/)?$/);
-    assert.deepEqual(items.map(i => i.label), locale === 'th' ? thai : english);
+    const loginItem = items.find(i => i.key === 'login');
+    assert.match(loginItem.href, /^https:\/\/4seas.xyz\/coliving\/(en\/|zh\/|th\/)?login$/);
+    assert.deepEqual(items.map(i => i.label), locale === 'th' ? thai : locale?.startsWith('zh') ? chinese : english);
     assert.equal(items[3].href, 'https://4seas.xyz/event');
   }
 });
